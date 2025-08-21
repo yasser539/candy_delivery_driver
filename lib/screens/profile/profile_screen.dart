@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
-// removed unused app_bloc import
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/services/supabase_service.dart';
 import '../../core/services/auth_service.dart';
@@ -302,7 +301,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Expanded(
                       child: _buildFinancialItem(
                         'النقدي',
-                        '2,450 ريال',
+                        '2,450',
                         FontAwesomeIcons.moneyBill,
                         DesignSystem.success,
                         isDark,
@@ -312,7 +311,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Expanded(
                       child: _buildFinancialItem(
                         'فيزا',
-                        '1,800 ريال',
+                        '1,800',
                         FontAwesomeIcons.creditCard,
                         DesignSystem.info,
                         isDark,
@@ -326,7 +325,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Expanded(
                       child: _buildFinancialItem(
                         'الإجمالي',
-                        '4,250 ريال',
+                        '4,250',
                         FontAwesomeIcons.wallet,
                         DesignSystem.primary,
                         isDark,
@@ -336,7 +335,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Expanded(
                       child: _buildFinancialItem(
                         'هذا الشهر',
-                        '850 ريال',
+                        '850',
                         FontAwesomeIcons.calendar,
                         DesignSystem.warning,
                         isDark,
@@ -383,7 +382,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 4),
-          Text(
+          // Replace occurrences of the word 'ريال' with the currency SVG icon
+          _buildCurrencyWidget(
             value,
             style: DesignSystem.titleMedium.copyWith(
               color: DesignSystem.textPrimary,
@@ -392,6 +392,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCurrencyWidget(String rawValue, {TextStyle? style}) {
+    // Remove common Arabic currency words and trim
+    final cleaned =
+        rawValue.replaceAll('الريال', '').replaceAll('ريال', '').trim();
+
+    // Just return the cleaned amount as text (no currency icon)
+    return Text(
+      cleaned,
+      style: style,
     );
   }
 

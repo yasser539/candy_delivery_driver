@@ -4,7 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../core/design_system/design_system.dart';
 import '../core/design_system/platform_ui_standards.dart';
 import '../models/cart.dart';
-import 'currency_icon.dart';
+// currency_icon removed — amounts displayed as plain text now
 
 class CartCard extends StatelessWidget {
   final Cart cart;
@@ -146,6 +146,7 @@ class CartCard extends StatelessWidget {
                   ...cart.items.map((item) => Padding(
                         padding: const EdgeInsets.only(bottom: 4),
                         child: Row(
+                          textDirection: TextDirection.rtl,
                           children: [
                             Expanded(
                               child: Text(
@@ -156,16 +157,11 @@ class CartCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              '${item.totalPrice} ',
+                              '${item.totalPrice}',
                               style: DesignSystem.bodySmall.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: DesignSystem.primary,
                               ),
-                            ),
-                            CurrencyIcon(
-                              width: 12,
-                              height: 12,
-                              color: DesignSystem.primary,
                             ),
                           ],
                         ),
@@ -179,22 +175,12 @@ class CartCard extends StatelessWidget {
                         color: DesignSystem.textSecondary,
                       ),
                     ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '${cart.totalAmount} ',
-                          style: DesignSystem.bodyMedium.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: DesignSystem.primary,
-                          ),
-                        ),
-                        CurrencyIcon(
-                          width: 16,
-                          height: 16,
-                          color: DesignSystem.primary,
-                        ),
-                      ],
+                    Text(
+                      '${cart.totalAmount}',
+                      style: DesignSystem.bodyMedium.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: DesignSystem.primary,
+                      ),
                     ),
                   ],
                 ),

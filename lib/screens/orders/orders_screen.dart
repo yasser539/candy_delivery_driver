@@ -470,6 +470,10 @@ class _OrdersScreenState extends State<OrdersScreen>
   }
 
   Widget _buildEmptyState() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final titleColor = isDark ? Colors.white : Colors.grey[800]!;
+    final subtitleColor = isDark ? Colors.grey[300]! : Colors.grey[600]!;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 32),
@@ -495,7 +499,7 @@ class _OrdersScreenState extends State<OrdersScreen>
             'لا توجد طلبات حالياً',
             textAlign: TextAlign.center,
             style: DesignSystem.headlineMedium.copyWith(
-              color: Colors.grey[800],
+              color: titleColor,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -504,7 +508,7 @@ class _OrdersScreenState extends State<OrdersScreen>
             'ستظهر الطلبات الجديدة هنا عند توفرها',
             textAlign: TextAlign.center,
             style: DesignSystem.bodyMedium.copyWith(
-              color: Colors.grey[600],
+              color: subtitleColor,
             ),
           ),
           const SizedBox(height: 24),

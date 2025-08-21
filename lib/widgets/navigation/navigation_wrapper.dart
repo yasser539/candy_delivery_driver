@@ -26,7 +26,7 @@ class _NavigationWrapperState extends State<NavigationWrapper>
   // Swipe detection
   // removed unused _dragStartX
   double _dragDistance = 0.0;
-  static const double _swipeThreshold = 100.0;
+  static const double _swipeThreshold = 60.0;
 
   @override
   void initState() {
@@ -77,15 +77,19 @@ class _NavigationWrapperState extends State<NavigationWrapper>
             (appSettings.themeMode == ThemeMode.system &&
                 MediaQuery.of(context).platformBrightness == Brightness.dark);
         return Scaffold(
-          backgroundColor:
-              isDarkMode ? DesignSystem.darkBackground : DesignSystem.background,
+          backgroundColor: isDarkMode
+              ? DesignSystem.darkBackground
+              : DesignSystem.background,
           body: GestureDetector(
             onHorizontalDragUpdate: _handleSwipe,
             onHorizontalDragEnd: _handleSwipeEnd,
             child: Stack(
               children: [
-                // Main content with animation
-                widget.child,
+                // Main content with added bottom padding so content isn't hidden
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 88),
+                  child: widget.child,
+                ),
                 // Navigation bar at bottom
                 Align(
                   alignment: Alignment.bottomCenter,

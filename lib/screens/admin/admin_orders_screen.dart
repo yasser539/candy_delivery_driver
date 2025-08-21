@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../../core/design_system/design_system.dart';
 import '../../core/services/order_service.dart';
 import '../../models/order.dart';
-import '../../widgets/currency_icon.dart';
+// currency_icon removed — amounts displayed as plain text now
 import '../../widgets/modern_app_bar.dart';
 
 class AdminOrdersScreen extends StatefulWidget {
@@ -122,12 +122,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
           Text('الهاتف: ${order.customerPhone}'),
           Row(
             children: [
-              Text('المبلغ: ${order.amount} '),
-              CurrencyIcon(
-                width: 16,
-                height: 16,
-                color: DesignSystem.primary,
-              ),
+              Text('المبلغ: ${order.amount}'),
             ],
           ),
           const SizedBox(height: 16),

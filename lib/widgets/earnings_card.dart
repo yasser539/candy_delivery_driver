@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../core/design_system/design_system.dart';
-import 'currency_icon.dart';
+// currency_icon removed — amounts displayed as plain text now
 
 class EarningsCard extends StatelessWidget {
   final String title;
@@ -65,31 +65,13 @@ class EarningsCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                showCurrencyIcon
-                    ? Row(
-                        children: [
-                          Text(
-                            amount,
-                            style: DesignSystem.titleLarge.copyWith(
-                              color: DesignSystem.textPrimary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          CurrencyIcon(
-                            width: 20,
-                            height: 20,
-                            color: DesignSystem.textPrimary,
-                          ),
-                        ],
-                      )
-                    : Text(
-                        amount,
-                        style: DesignSystem.titleLarge.copyWith(
-                          color: DesignSystem.textPrimary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                Text(
+                  amount,
+                  style: DesignSystem.titleLarge.copyWith(
+                    color: DesignSystem.textPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
           ),

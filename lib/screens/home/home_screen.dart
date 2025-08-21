@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../blocs/app_bloc.dart';
 import '../../core/design_system/design_system.dart';
+// currency_icon removed — amounts displayed as plain text now
 import '../../core/services/cart_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/supabase_test.dart';
@@ -743,14 +744,14 @@ class CartCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 6),
-                Text(
-                  '${cart.totalAmount} ر.س',
-                  style: TextStyle(
-                    color: DesignSystem.primary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
-                ),
+                    Text(
+                      '${cart.totalAmount}',
+                      style: TextStyle(
+                        color: DesignSystem.primary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
               ],
             ),
             const SizedBox(height: 12),

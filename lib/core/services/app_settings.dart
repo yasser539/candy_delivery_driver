@@ -14,6 +14,7 @@ class AppSettings extends ChangeNotifier {
   String _language = 'العربية';
   bool _notificationsEnabled = true;
   bool _locationTracking = true;
+  bool _initialized = false;
 
   // Getters
   bool get isDarkMode => _isDarkMode;
@@ -48,7 +49,10 @@ class AppSettings extends ChangeNotifier {
       _rawThemeMode = _isDarkMode ? 'dark' : 'light';
     }
     notifyListeners();
+    _initialized = true;
   }
+
+  bool get isInitialized => _initialized;
 
   // Save settings
   Future<void> _saveSettings() async {

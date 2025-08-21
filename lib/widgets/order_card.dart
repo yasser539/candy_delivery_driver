@@ -4,7 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../core/design_system/design_system.dart';
 import '../core/design_system/platform_ui_standards.dart';
 import '../models/order.dart';
-import 'currency_icon.dart';
+// currency_icon removed — amounts displayed as plain text now
 
 class OrderCard extends StatelessWidget {
   final Order order;
@@ -144,22 +144,12 @@ class OrderCard extends StatelessWidget {
                         color: DesignSystem.textSecondary,
                       ),
                     ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '${order.amount} ',
-                          style: DesignSystem.bodyMedium.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: DesignSystem.primary,
-                          ),
-                        ),
-                        CurrencyIcon(
-                          width: 16,
-                          height: 16,
-                          color: DesignSystem.primary,
-                        ),
-                      ],
+                    Text(
+                      '${order.amount}',
+                      style: DesignSystem.bodyMedium.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: DesignSystem.primary,
+                      ),
                     ),
                   ],
                 ),

@@ -88,52 +88,15 @@ class _CandyNavigationBarState extends State<CandyNavigationBar>
                 right: 12,
               ),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(32),
+                borderRadius: BorderRadius.circular(28),
                 color: Theme.of(context).brightness == Brightness.dark
-                    ? const Color(0xCC1E293B)
-                    : const Color(0xCCFFFFFF),
+                    ? const Color(0xDD1E293B)
+                    : const Color(0xDDFFFFFF),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                    spreadRadius: 0,
-                  ),
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 1,
-                    offset: const Offset(0, -1),
-                    spreadRadius: 0,
-                  ),
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 1,
-                    offset: const Offset(0, 1),
-                    spreadRadius: 0,
-                  ),
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 1,
-                    offset: const Offset(-1, 0),
-                    spreadRadius: 0,
-                  ),
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 1,
-                    offset: const Offset(1, 0),
-                    spreadRadius: 0,
-                  ),
-                  BoxShadow(
-                    color: Colors.white.withOpacity(0.1),
-                    blurRadius: 8,
-                    offset: const Offset(-3, 0),
-                    spreadRadius: 0,
-                  ),
-                  BoxShadow(
-                    color: Colors.white.withOpacity(0.1),
-                    blurRadius: 8,
-                    offset: const Offset(3, 0),
-                    spreadRadius: 0,
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 10,
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
@@ -204,123 +167,93 @@ class _CandyNavigationBarState extends State<CandyNavigationBar>
     bool isHome = false,
   }) {
     return RepaintBoundary(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  if (isHome)
-                    Container(
-                      width: 56,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        gradient: DesignSystem.primaryGradient,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: DesignSystem.primary.withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+      child: Semantics(
+        button: true,
+        label: label,
+        selected: isActive,
+        child: GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    if (isHome)
+                      Container(
+                        width: 58,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          gradient: DesignSystem.primaryGradient,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                       ),
-                    ),
-                  isHome
-                      ? Container(
-                          width: 56,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            gradient: DesignSystem.primaryGradient,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Center(
-                            child: FaIcon(icon, color: Colors.white, size: 20),
-                          ),
-                        )
-                      : isActive
-                          ? ShaderMask(
-                              shaderCallback: (Rect bounds) {
-                                return DesignSystem.primaryGradient
-                                    .createShader(bounds);
-                              },
-                              blendMode: BlendMode.srcIn,
+                    isHome
+                        ? Container(
+                            width: 58,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              gradient: DesignSystem.primaryGradient,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Center(
                               child:
                                   FaIcon(icon, color: Colors.white, size: 20),
-                            )
-                          : FaIcon(
-                              icon,
-                              color: Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? Colors.grey[500]
-                                  : Colors.grey[600],
-                              size: 24,
                             ),
-                  if (badge != null)
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 400),
-                        curve: Curves.elasticOut,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.red[500],
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.red[500]!.withOpacity(0.3),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 18,
-                          minHeight: 18,
-                        ),
-                        child: Center(
-                          child: AnimatedScale(
-                            scale: 1.0,
-                            duration: const Duration(milliseconds: 200),
-                            curve: Curves.elasticOut,
+                          )
+                        : isActive
+                            ? FaIcon(icon,
+                                color: DesignSystem.primary, size: 22)
+                            : FaIcon(icon,
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
+                                size: 22),
+                    if (badge != null)
+                      Positioned(
+                        right: 2,
+                        top: 2,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade600,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          constraints: const BoxConstraints(minWidth: 20),
+                          child: Center(
                             child: Text(
                               badge.toString(),
                               style: DesignSystem.labelSmall.copyWith(
                                 color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 2),
-              AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutCubic,
-                style: DesignSystem.labelSmall.copyWith(
-                  color: isActive
-                      ? DesignSystem.primary
-                      : Theme.of(context).brightness == Brightness.dark
-                          ? Colors.grey[500]
-                          : Colors.grey[600],
-                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                  ],
                 ),
-                child: Text(label),
-              ),
-            ],
+                const SizedBox(height: 4),
+                DefaultTextStyle(
+                  style: DesignSystem.labelSmall.copyWith(
+                    color: isActive
+                        ? DesignSystem.primary
+                        : Theme.of(context).brightness == Brightness.dark
+                            ? Colors.grey[400]
+                            : Colors.grey[700],
+                    fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                  ),
+                  child: Text(label),
+                ),
+              ],
+            ),
           ),
         ),
       ),

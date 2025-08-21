@@ -171,32 +171,33 @@ class DesignSystem {
 
   // Buttons
   static ButtonStyle get primaryButtonStyle => ElevatedButton.styleFrom(
-    foregroundColor: Colors.white,
-    backgroundColor: Colors.transparent,
-    shadowColor: Colors.transparent,
-    elevation: 0,
-    padding: PlatformUIStandards.buttonPadding,
-    shape: RoundedRectangleBorder(
-      borderRadius: PlatformUIStandards.getBorderRadius('button'),
-    ),
-  );
+        foregroundColor: Colors.white,
+        // Use the brand button color so buttons are visible and accessible by default
+        backgroundColor: AppColors.buttonPrimary,
+        shadowColor: AppColors.buttonPrimary.withOpacity(0.24),
+        elevation: 2,
+        padding: PlatformUIStandards.buttonPadding,
+        shape: RoundedRectangleBorder(
+          borderRadius: PlatformUIStandards.getBorderRadius('button'),
+        ),
+      );
 
   static ButtonStyle get secondaryButtonStyle => OutlinedButton.styleFrom(
-    foregroundColor: primary,
-    side: BorderSide(color: primary, width: 1.5),
-    padding: PlatformUIStandards.buttonPadding,
-    shape: RoundedRectangleBorder(
-      borderRadius: PlatformUIStandards.getBorderRadius('button'),
-    ),
-  );
+        foregroundColor: primary,
+        side: BorderSide(color: primary, width: 1.5),
+        padding: PlatformUIStandards.buttonPadding,
+        shape: RoundedRectangleBorder(
+          borderRadius: PlatformUIStandards.getBorderRadius('button'),
+        ),
+      );
 
   static ButtonStyle get textButtonStyle => TextButton.styleFrom(
-    foregroundColor: primary,
-    padding: PlatformUIStandards.buttonPadding,
-    shape: RoundedRectangleBorder(
-      borderRadius: PlatformUIStandards.getBorderRadius('button'),
-    ),
-  );
+        foregroundColor: primary,
+        padding: PlatformUIStandards.buttonPadding,
+        shape: RoundedRectangleBorder(
+          borderRadius: PlatformUIStandards.getBorderRadius('button'),
+        ),
+      );
 
   // Form field with gradient frame (used in Login)
   static Widget gradientTextFormField({

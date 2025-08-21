@@ -98,7 +98,9 @@ class _AvailableCartsScreenState extends State<AvailableCartsScreen> {
                     Text(
                       'الطلبات المتاحة: ',
                       style: DesignSystem.bodyMedium.copyWith(
-                        color: Colors.grey[700],
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.grey[300]
+                            : Colors.grey[700],
                       ),
                     ),
                     Text(
@@ -126,7 +128,7 @@ class _AvailableCartsScreenState extends State<AvailableCartsScreen> {
                             curve: Curves.easeInOut,
                             margin: const EdgeInsets.only(bottom: 10),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(
                                   PlatformUIStandards.cardRadius),
                               boxShadow: [
