@@ -11,11 +11,15 @@ class CurrencyIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SvgPicture.asset(
-      'assets/icon/rsak.svg',
+      'assets/icons/rsak.svg',
       width: width ?? 16,
       height: height ?? 16,
+      // set color for older flutter_svg and colorFilter as fallback
       color: color,
       colorBlendMode: BlendMode.srcIn,
+      colorFilter: color != null
+          ? ColorFilter.mode(color!, BlendMode.srcIn)
+          : null,
     );
   }
 }

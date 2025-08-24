@@ -44,12 +44,14 @@ class CartCard extends StatelessWidget {
             children: [
               Container(
                 padding: EdgeInsets.symmetric(
-                    horizontal: PlatformUIStandards.spacingS,
-                    vertical: PlatformUIStandards.spacingXS),
+                  horizontal: PlatformUIStandards.spacingS,
+                  vertical: PlatformUIStandards.spacingXS,
+                ),
                 decoration: BoxDecoration(
                   color: _getStatusColor().withOpacity(0.1),
-                  borderRadius:
-                      BorderRadius.circular(PlatformUIStandards.smallRadius),
+                  borderRadius: BorderRadius.circular(
+                    PlatformUIStandards.smallRadius,
+                  ),
                 ),
                 child: Text(
                   cart.statusText,
@@ -68,7 +70,9 @@ class CartCard extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: PlatformUIStandards.spacingS),
+
+          // زيادة الفراغ بين رقم الطلب ومعلومات العميل
+          const SizedBox(height: 64),
 
           // Customer info
           if (cart.customerName != null) ...[
@@ -113,7 +117,7 @@ class CartCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 29),
           ],
 
           // Cart items
@@ -143,33 +147,35 @@ class CartCard extends StatelessWidget {
                     textAlign: TextAlign.right,
                   )
                 else
-                  ...cart.items.map((item) => Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                '${item.productName} (${item.quantity})',
-                                style: DesignSystem.bodySmall,
-                                textAlign: TextAlign.right,
-                              ),
+                  ...cart.items.map(
+                    (item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              '${item.productName} (${item.quantity})',
+                              style: DesignSystem.bodySmall,
+                              textAlign: TextAlign.right,
                             ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '${item.totalPrice} ',
-                              style: DesignSystem.bodySmall.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: DesignSystem.primary,
-                              ),
-                            ),
-                            CurrencyIcon(
-                              width: 12,
-                              height: 12,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${item.totalPrice} ',
+                            style: DesignSystem.bodySmall.copyWith(
+                              fontWeight: FontWeight.bold,
                               color: DesignSystem.primary,
                             ),
-                          ],
-                        ),
-                      )),
+                          ),
+                          CurrencyIcon(
+                            width: 12,
+                            height: 12,
+                            color: DesignSystem.primary,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -179,6 +185,13 @@ class CartCard extends StatelessWidget {
                         color: DesignSystem.textSecondary,
                       ),
                     ),
+                    // Total icon next to the total text
+                    FaIcon(
+                      FontAwesomeIcons.calculator,
+                      size: 12,
+                      color: DesignSystem.textSecondary,
+                    ),
+                    const SizedBox(width: 8),
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -211,8 +224,8 @@ class CartCard extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: onAccept,
-                    icon: FaIcon(FontAwesomeIcons.check, size: 16),
-                    label: Text('قبول الطلب'),
+                    icon: const FaIcon(FontAwesomeIcons.check, size: 16),
+                    label: const Text('قبول الطلب'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: DesignSystem.success,
                       foregroundColor: Colors.white,
@@ -227,8 +240,8 @@ class CartCard extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: onReject,
-                    icon: FaIcon(FontAwesomeIcons.xmark, size: 16),
-                    label: Text('رفض'),
+                    icon: const FaIcon(FontAwesomeIcons.xmark, size: 16),
+                    label: const Text('رفض'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: DesignSystem.error,
                       side: BorderSide(color: DesignSystem.error),
@@ -248,8 +261,8 @@ class CartCard extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: onCallCustomer,
-                    icon: FaIcon(FontAwesomeIcons.phone, size: 16),
-                    label: Text('اتصال'),
+                    icon: const FaIcon(FontAwesomeIcons.phone, size: 16),
+                    label: const Text('اتصال'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: DesignSystem.info,
                       foregroundColor: Colors.white,
@@ -264,8 +277,11 @@ class CartCard extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: onNavigate,
-                    icon: FaIcon(FontAwesomeIcons.locationArrow, size: 16),
-                    label: Text('خريطة'),
+                    icon: const FaIcon(
+                      FontAwesomeIcons.locationArrow,
+                      size: 16,
+                    ),
+                    label: const Text('خريطة'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: DesignSystem.primary,
                       foregroundColor: Colors.white,
@@ -288,8 +304,8 @@ class CartCard extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: () =>
                           onUpdateStatus?.call(CartStatus.onTheWay),
-                      icon: FaIcon(FontAwesomeIcons.truck, size: 16),
-                      label: Text('في الطريق إليك'),
+                      icon: const FaIcon(FontAwesomeIcons.truck, size: 16),
+                      label: const Text('في الطريق إليك'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: DesignSystem.warning,
                         foregroundColor: Colors.white,
@@ -309,8 +325,11 @@ class CartCard extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: () =>
                           onUpdateStatus?.call(CartStatus.delivered),
-                      icon: FaIcon(FontAwesomeIcons.checkCircle, size: 16),
-                      label: Text('تم التوصيل'),
+                      icon: const FaIcon(
+                        FontAwesomeIcons.checkCircle,
+                        size: 16,
+                      ),
+                      label: const Text('تم التوصيل'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: DesignSystem.success,
                         foregroundColor: Colors.white,

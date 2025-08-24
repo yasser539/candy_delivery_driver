@@ -11,6 +11,7 @@ import '../../core/services/supabase_test.dart';
 import '../../core/services/attendance_service.dart';
 import '../../core/services/supabase_service.dart';
 import '../../models/cart.dart';
+import '../../widgets/currency_icon.dart';
 // removed unused imports
 
 class HomeScreen extends StatefulWidget {
@@ -151,7 +152,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             'الطلبات المتاحة',
                             style: DesignSystem.titleMedium.copyWith(
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: isDark
+                                  ? Colors.white
+                                  : DesignSystem.textPrimary,
                               fontSize: 18,
                             ),
                             overflow: TextOverflow.ellipsis,
@@ -692,6 +695,18 @@ class CartCard extends StatelessWidget {
     final Color cardColor = isDark
         ? DesignSystem.darkSurface
         : DesignSystem.surface;
+    // Text colors: black in light mode, readable in dark mode
+    final Color textColor = isDark
+        ? DesignSystem.darkTextPrimary
+        : DesignSystem.textPrimary;
+    final Color secondaryColor = isDark
+        ? Colors.white70
+        : DesignSystem.textSecondary;
+
+    // sizes: orderTextSize remains large; other text reduced
+    final double baseTextSize = 12.0;
+    final double orderTextSize = 16.0;
+    final double cartIconSize = 18.0;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
@@ -719,10 +734,10 @@ class CartCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     'طلب #${cart.id}',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: textColor,
                       fontWeight: FontWeight.w800,
-                      fontSize: 12,
+                      fontSize: orderTextSize,
                       letterSpacing: 0.2,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -736,9 +751,9 @@ class CartCard extends StatelessWidget {
                         Rect.fromLTWH(0, 0, rect.width, rect.height),
                       ),
                   blendMode: BlendMode.srcIn,
-                  child: const FaIcon(
+                  child: FaIcon(
                     FontAwesomeIcons.box,
-                    size: 14,
+                    size: cartIconSize,
                     color: Colors.white,
                   ),
                 ),
@@ -751,68 +766,85 @@ class CartCard extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                  child: Row(
+                    textDirection: TextDirection.ltr,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        textDirection: TextDirection.ltr,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              cart.customerName ?? '',
-                              style: const TextStyle(
+                      // Left: phone icon + number (moved to visual left)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ShaderMask(
+                              shaderCallback: (rect) =>
+                                  DesignSystem.primaryGradient.createShader(
+                                    Rect.fromLTWH(
+                                      0,
+                                      0,
+                                      rect.width,
+                                      rect.height,
+                                    ),
+                                  ),
+                              blendMode: BlendMode.srcIn,
+                              child: Icon(
+                                FontAwesomeIcons.phone,
+                                size: cartIconSize,
                                 color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14,
                               ),
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.right,
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          ShaderMask(
-                            shaderCallback: (rect) =>
-                                DesignSystem.primaryGradient.createShader(
-                                  Rect.fromLTWH(0, 0, rect.width, rect.height),
-                                ),
-                            blendMode: BlendMode.srcIn,
-                            child: const FaIcon(
-                              FontAwesomeIcons.user,
-                              size: 16,
-                              color: Colors.white,
+                            const SizedBox(width: 12),
+                            Text(
+                              cart.customerPhone ?? '',
+                              style: TextStyle(
+                                color: secondaryColor,
+                                fontWeight: FontWeight.w600,
+                                fontSize: baseTextSize,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 6),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        textDirection: TextDirection.ltr,
-                        children: [
-                          Text(
-                            cart.customerPhone ?? '',
-                            textAlign: TextAlign.right,
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          ShaderMask(
-                            shaderCallback: (rect) =>
-                                DesignSystem.primaryGradient.createShader(
-                                  Rect.fromLTWH(0, 0, rect.width, rect.height),
+
+                      // Right: customer name + user icon
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          textDirection: TextDirection.ltr,
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                cart.customerName ?? '',
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: baseTextSize,
                                 ),
-                            blendMode: BlendMode.srcIn,
-                            child: const Icon(
-                              FontAwesomeIcons.phone,
-                              size: 14,
-                              color: Colors.white,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.right,
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 12),
+                            ShaderMask(
+                              shaderCallback: (rect) =>
+                                  DesignSystem.primaryGradient.createShader(
+                                    Rect.fromLTWH(
+                                      0,
+                                      0,
+                                      rect.width,
+                                      rect.height,
+                                    ),
+                                  ),
+                              blendMode: BlendMode.srcIn,
+                              child: FaIcon(
+                                FontAwesomeIcons.user,
+                                size: cartIconSize,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -821,7 +853,13 @@ class CartCard extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
+            Divider(
+              color: isDark ? Colors.white12 : Colors.black12,
+              thickness: 0.5,
+              height: 16,
+            ),
+            const SizedBox(height: 8),
 
             // ===== عنوان المنتجات (الأيقونة يمين والنص يسارها) =====
             Row(
@@ -833,95 +871,145 @@ class CartCard extends StatelessWidget {
                         Rect.fromLTWH(0, 0, rect.width, rect.height),
                       ),
                   blendMode: BlendMode.srcIn,
-                  child: const FaIcon(
+                  child: FaIcon(
                     FontAwesomeIcons.boxOpen,
-                    size: 14,
+                    size: cartIconSize,
                     color: Colors.white,
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Text(
+                Text(
                   'المنتجات:',
                   style: TextStyle(
-                    color: Colors.white70,
+                    color: secondaryColor,
                     fontWeight: FontWeight.w700,
-                    fontSize: 13,
+                    fontSize: baseTextSize,
                   ),
                   textAlign: TextAlign.right,
                 ),
+                // show first product on same line if exists
+                if (cart.items.isNotEmpty) ...[
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 12.0),
+                      child: Text(
+                        cart.items.first.productName ?? '',
+                        style: TextStyle(
+                          color: textColor,
+                          fontWeight: FontWeight.w500,
+                          fontSize: baseTextSize,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.left,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
 
             const SizedBox(height: 8),
 
             // ===== قائمة المنتجات (نص فقط) =====
-            ...cart.items.map(
-              (item) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 3),
-                child: Row(
-                  textDirection: TextDirection.rtl,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        '${item.productName} (${item.quantity})',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
+            // start from second item because first is shown inline with title
+            ...cart.items
+                .skip(1)
+                .map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 3),
+                    child: Row(
+                      textDirection: TextDirection.ltr,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            item.productName ?? '',
+                            style: TextStyle(
+                              fontSize: baseTextSize,
+                              color: textColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.left,
+                          ),
                         ),
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.right,
+                      ],
+                    ),
+                  ),
+                ),
+
+            const SizedBox(height: 8),
+            Divider(
+              color: isDark ? Colors.white12 : Colors.black12,
+              thickness: 0.5,
+              height: 16,
+            ),
+            const SizedBox(height: 8),
+
+            // ===== المجموع =====
+            // ===== المجموع: اللابل يمين، القيمة يسار + rsak.svg + أيقونة المجموع =====
+            // ===== المجموع: الأيقونة + اللابل يمين / القيمة + رمز العملة يسار =====
+            Row(
+              children: [
+                // يمين: أيقونة المجموع مع اللابل
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ShaderMask(
+                      shaderCallback: (rect) =>
+                          DesignSystem.primaryGradient.createShader(
+                            Rect.fromLTWH(0, 0, rect.width, rect.height),
+                          ),
+                      blendMode: BlendMode.srcIn,
+                      child: const FaIcon(
+                        FontAwesomeIcons.moneyBillWave,
+                        size: 14,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'المجموع:',
+                      style: TextStyle(
+                        color: secondaryColor,
+                        fontWeight: FontWeight.w700,
+                        fontSize: baseTextSize,
                       ),
                     ),
                   ],
                 ),
-              ),
-            ),
 
-            const SizedBox(height: 12),
+                const Spacer(),
 
-            // ===== المجموع =====
-            Row(
-              textDirection: TextDirection.ltr,
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'المجموع:',
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 13,
-                          ),
-                          textAlign: TextAlign.right,
-                        ),
+                // يسار: القيمة + أيقونة العملة
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${cart.totalAmount}',
+                      style: TextStyle(
+                        color: textColor,
+                        fontWeight: FontWeight.w800,
+                        fontSize: baseTextSize,
                       ),
-                      const SizedBox(width: 6),
-                      Text(
-                        '${cart.totalAmount} ر.س',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ShaderMask(
-                  shaderCallback: (rect) =>
-                      DesignSystem.primaryGradient.createShader(
-                        Rect.fromLTWH(0, 0, rect.width, rect.height),
-                      ),
-                  blendMode: BlendMode.srcIn,
-                  child: const FaIcon(
-                    FontAwesomeIcons.moneyBillWave,
-                    size: 14,
-                    color: Colors.white,
-                  ),
+                      textAlign: TextAlign.left,
+                    ),
+                    const SizedBox(width: 6),
+
+                    // استخدم أي واحد من الخيارين حسب تفضيلك:
+
+                    // (أ) الويدجت الحالي عندك:
+                    CurrencyIcon(width: 16, height: 16, color: textColor),
+
+                    // (ب) أو مباشرة من المسار (لو استخدمت flutter_svg):
+                    // SvgPicture.asset(
+                    //   'assets/icons/rsak.svg',
+                    //   width: 16,
+                    //   height: 16,
+                    //   colorFilter: ColorFilter.mode(textColor, BlendMode.srcIn),
+                    // ),
+                  ],
                 ),
               ],
             ),
@@ -1044,12 +1132,18 @@ class _GradientOutlineFillButton extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
             ),
-            child: Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+            child: ShaderMask(
+              shaderCallback: (rect) => gradient.createShader(
+                Rect.fromLTWH(0, 0, rect.width, rect.height),
+              ),
+              blendMode: BlendMode.srcIn,
+              child: Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),

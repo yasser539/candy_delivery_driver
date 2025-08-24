@@ -10,59 +10,59 @@ class AppTheme {
     appBarTheme: AppBarTheme(
       backgroundColor: Colors.white,
       elevation: 0,
-      iconTheme: const IconThemeData(color: Colors.black87),
+      iconTheme: const IconThemeData(color: DesignSystem.textPrimary),
       titleTextStyle: TextStyle(
         fontFamily: 'Rubik',
         fontSize: 18,
         fontWeight: language == 'ar' ? FontWeight.w900 : FontWeight.bold,
-        color: Colors.black87,
+        color: DesignSystem.textPrimary,
       ),
     ),
     textTheme: TextTheme(
       bodyLarge: TextStyle(
         fontFamily: 'Rubik',
         fontWeight: language == 'ar' ? FontWeight.w900 : null,
-        color: Colors.black87,
+        color: DesignSystem.textPrimary,
       ),
       bodyMedium: TextStyle(
         fontFamily: 'Rubik',
         fontWeight: language == 'ar' ? FontWeight.w900 : null,
-        color: Colors.black87,
+        color: DesignSystem.textPrimary,
       ),
       bodySmall: TextStyle(
         fontFamily: 'Rubik',
         fontWeight: language == 'ar' ? FontWeight.w900 : null,
-        color: Colors.black87,
+        color: DesignSystem.textPrimary,
       ),
       titleLarge: TextStyle(
         fontFamily: 'Rubik',
         fontWeight: language == 'ar' ? FontWeight.w900 : null,
-        color: Colors.black87,
+        color: DesignSystem.textPrimary,
       ),
       titleMedium: TextStyle(
         fontFamily: 'Rubik',
         fontWeight: language == 'ar' ? FontWeight.w900 : null,
-        color: Colors.black87,
+        color: DesignSystem.textPrimary,
       ),
       titleSmall: TextStyle(
         fontFamily: 'Rubik',
         fontWeight: language == 'ar' ? FontWeight.w900 : null,
-        color: Colors.black87,
+        color: DesignSystem.textPrimary,
       ),
       labelLarge: TextStyle(
         fontFamily: 'Rubik',
         fontWeight: language == 'ar' ? FontWeight.w900 : null,
-        color: Colors.black87,
+        color: DesignSystem.textPrimary,
       ),
       labelMedium: TextStyle(
         fontFamily: 'Rubik',
         fontWeight: language == 'ar' ? FontWeight.w900 : null,
-        color: Colors.black87,
+        color: DesignSystem.textPrimary,
       ),
       labelSmall: TextStyle(
         fontFamily: 'Rubik',
         fontWeight: language == 'ar' ? FontWeight.w900 : null,
-        color: Colors.black87,
+        color: DesignSystem.textPrimary,
       ),
     ),
   );
