@@ -82,11 +82,7 @@ class _CandyNavigationBarState extends State<CandyNavigationBar>
             onHorizontalDragEnd: _handleSwipeEnd,
             child: Container(
               width: double.infinity,
-              margin: const EdgeInsets.only(
-                bottom: 16,
-                left: 12,
-                right: 12,
-              ),
+              margin: const EdgeInsets.only(bottom: 16, left: 12, right: 12),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(32),
                 color: Theme.of(context).brightness == Brightness.dark
@@ -245,23 +241,22 @@ class _CandyNavigationBarState extends State<CandyNavigationBar>
                           ),
                         )
                       : isActive
-                          ? ShaderMask(
-                              shaderCallback: (Rect bounds) {
-                                return DesignSystem.primaryGradient
-                                    .createShader(bounds);
-                              },
-                              blendMode: BlendMode.srcIn,
-                              child:
-                                  FaIcon(icon, color: Colors.white, size: 20),
-                            )
-                          : FaIcon(
-                              icon,
-                              color: Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? Colors.grey[500]
-                                  : Colors.grey[600],
-                              size: 24,
-                            ),
+                      ? ShaderMask(
+                          shaderCallback: (Rect bounds) {
+                            return DesignSystem.primaryGradient.createShader(
+                              bounds,
+                            );
+                          },
+                          blendMode: BlendMode.srcIn,
+                          child: FaIcon(icon, color: Colors.white, size: 20),
+                        )
+                      : FaIcon(
+                          icon,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.grey[500]
+                              : Colors.grey[600],
+                          size: 24,
+                        ),
                   if (badge != null)
                     Positioned(
                       right: 0,
@@ -296,6 +291,7 @@ class _CandyNavigationBarState extends State<CandyNavigationBar>
                             child: Text(
                               badge.toString(),
                               style: DesignSystem.labelSmall.copyWith(
+                                fontFamily: 'Rubik',
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -311,11 +307,12 @@ class _CandyNavigationBarState extends State<CandyNavigationBar>
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeOutCubic,
                 style: DesignSystem.labelSmall.copyWith(
+                  fontFamily: 'Rubik',
                   color: isActive
                       ? DesignSystem.primary
                       : Theme.of(context).brightness == Brightness.dark
-                          ? Colors.grey[500]
-                          : Colors.grey[600],
+                      ? Colors.grey[500]
+                      : Colors.grey[600],
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                 ),
                 child: Text(label),

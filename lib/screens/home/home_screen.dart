@@ -14,6 +14,23 @@ import '../../models/cart.dart';
 import '../../widgets/currency_icon.dart';
 // removed unused imports
 
+// Global manager for accepted carts (used by Orders screen)
+class AcceptedCartsManager {
+  static final List<Map<String, dynamic>> _acceptedCarts = [];
+
+  static void addCart(Map<String, dynamic> cartData) {
+    _acceptedCarts.add(cartData);
+  }
+
+  static List<Map<String, dynamic>> getAcceptedCarts() {
+    return List.from(_acceptedCarts);
+  }
+
+  static void clearCarts() {
+    _acceptedCarts.clear();
+  }
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
   @override
@@ -322,79 +339,44 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _acceptCart(Cart cart) async {
-    final success = await _cartService.acceptCart(cart.id);
-    if (!mounted) return;
-    if (success) {
-      // إزالة الطلب فوراً من القائمة
-      setState(() {
-        _availableCarts.removeWhere((c) => c.id == cart.id);
-      });
+    // UI-only accept: add a lightweight accepted record and remove from available list
+    final itemsList = cart.items
+        .map((it) => (it.productName ?? it.toString()).toString())
+        .toList();
 
-      // الانتقال إلى تبويب الطلبات
+    final cartData = {
+      'id': cart.id,
+      'customerName': cart.customerName,
+      'customerPhone': cart.customerPhone,
+      'totalAmount': cart.totalAmount,
+      'items': itemsList,
+      'status': 'تم التعيين',
+      'step': 2,
+    };
+
+    // keep this operation minimal and synchronous
+    AcceptedCartsManager.addCart(cartData);
+
+    if (!mounted) return;
+    // remove from available list quickly
+    setState(() {
+      _availableCarts.removeWhere((c) => c.id == cart.id);
+    });
+
+    // schedule navigation after the current frame to avoid heavy rebuilds during the tap
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
         final appBloc = context.read<AppBloc>();
         appBloc.add(SetCurrentIndexEvent(3));
       } catch (_) {}
 
-      // تنبيه بسيط بالنجاح
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('تم قبول الطلب #${cart.id.substring(0, 8)}'),
           backgroundColor: DesignSystem.success,
         ),
       );
-    } else {
-      // تحقق من حالة الطلب الحالية وقم بتحديث الواجهة وفقًا لذلك
-      try {
-        final latest = await _cartService.getCartById(cart.id);
-        if (!mounted) return;
-        if (latest != null) {
-          final myDriverId = Provider.of<AuthService>(
-            context,
-            listen: false,
-          ).captainProfile?['id']?.toString();
-          if (latest.driverId == myDriverId) {
-            // تم تعيين الطلب لي مسبقًا – اعتبره نجاحًا محليًا
-            setState(() {
-              _availableCarts.removeWhere((c) => c.id == cart.id);
-            });
-            try {
-              final appBloc = context.read<AppBloc>();
-              appBloc.add(SetCurrentIndexEvent(3));
-            } catch (_) {}
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('تم قبول الطلب #${cart.id.substring(0, 8)}'),
-                backgroundColor: DesignSystem.success,
-              ),
-            );
-            return;
-          }
-          if (latest.driverId != null && latest.driverId != myDriverId) {
-            // الطلب محجوز لسائق آخر – أزله من القائمة وبيّن السبب
-            setState(() {
-              _availableCarts.removeWhere((c) => c.id == cart.id);
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'تم حجز الطلب #${cart.id.substring(0, 8)} بواسطة موصل آخر',
-                ),
-                backgroundColor: DesignSystem.error,
-              ),
-            );
-            return;
-          }
-        }
-      } catch (_) {}
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('فشل في قبول الطلب #${cart.id.substring(0, 8)}'),
-          backgroundColor: DesignSystem.error,
-        ),
-      );
-    }
+    });
   }
 
   void _rejectCart(Cart cart) async {
@@ -567,8 +549,7 @@ class _StatusCardModern extends StatelessWidget {
                         Theme.of(ctx).brightness == Brightness.dark;
                     final Color contentColor = dark
                         ? Colors.white
-                        : (gradient?.colors.last ??
-                              (color ?? DesignSystem.primary));
+                        : Colors.black;
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -722,7 +703,7 @@ class CartCard extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
+        padding: const EdgeInsets.fromLTRB(16, 18, 16, 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -753,14 +734,14 @@ class CartCard extends StatelessWidget {
                   blendMode: BlendMode.srcIn,
                   child: FaIcon(
                     FontAwesomeIcons.box,
-                    size: cartIconSize,
+                    size: 22,
                     color: Colors.white,
                   ),
                 ),
               ],
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 19),
 
             // ===== بيانات العميل =====
             Row(
@@ -909,7 +890,7 @@ class CartCard extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
 
             // ===== قائمة المنتجات (نص فقط) =====
             // start from second item because first is shown inline with title
@@ -939,13 +920,13 @@ class CartCard extends StatelessWidget {
                   ),
                 ),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Divider(
               color: isDark ? Colors.white12 : Colors.black12,
               thickness: 0.5,
               height: 16,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
 
             // ===== المجموع =====
             // ===== المجموع: اللابل يمين، القيمة يسار + rsak.svg + أيقونة المجموع =====
@@ -1000,7 +981,14 @@ class CartCard extends StatelessWidget {
                     // استخدم أي واحد من الخيارين حسب تفضيلك:
 
                     // (أ) الويدجت الحالي عندك:
-                    CurrencyIcon(width: 16, height: 16, color: textColor),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 12.0),
+                      child: CurrencyIcon(
+                        width: 16,
+                        height: 16,
+                        color: textColor,
+                      ),
+                    ),
 
                     // (ب) أو مباشرة من المسار (لو استخدمت flutter_svg):
                     // SvgPicture.asset(
@@ -1014,7 +1002,7 @@ class CartCard extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
             // ===== الأزرار =====
             Row(
@@ -1149,6 +1137,72 @@ class _GradientOutlineFillButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+// Reuse _OrderProgressRow from orders_screen or add local fallback
+class _OrderProgressRow extends StatelessWidget {
+  final int currentStep; // 1..4
+
+  const _OrderProgressRow({this.currentStep = 1});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final inactive = isDark ? Colors.white12 : Colors.black12;
+    final active = DesignSystem.primary;
+
+    Widget stepDot(bool filled) {
+      return Container(
+        width: 12,
+        height: 12,
+        decoration: BoxDecoration(
+          color: filled ? active : Colors.transparent,
+          border: Border.all(color: filled ? active : inactive, width: 2),
+          shape: BoxShape.circle,
+        ),
+      );
+    }
+
+    Widget stepLabel(String label) {
+      return Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: isDark ? Colors.white70 : DesignSystem.textSecondary,
+        ),
+      );
+    }
+
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  stepLabel('مراجعة الطلب'),
+                  stepLabel('تحضير الطلب'),
+                  stepLabel('جاري التوصيل'),
+                  stepLabel('تم التوصيل'),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: List.generate(4, (i) {
+                  final filled = (i + 1) <= currentStep;
+                  return stepDot(filled);
+                }),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
