@@ -1,8 +1,6 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../core/design_system/design_system.dart';
-import '../../core/services/delivery_captain_service.dart';
 import '../../models/delivery_captain.dart';
 
 class CaptainsManagementScreen extends StatefulWidget {
@@ -18,37 +16,26 @@ class _CaptainsManagementScreenState extends State<CaptainsManagementScreen> {
   String _filterCity = '';
   String _filterStatus = '';
   String _filterPosition = '';
-  late DeliveryCaptainService _service;
-  StreamSubscription? _subscription;
   List<DeliveryCaptain> _captains = [];
 
   @override
   void initState() {
     super.initState();
-    _service = DeliveryCaptainService();
-    _subscription = _service.captainsStream.listen((data) {
-      if (mounted) setState(() => _captains = data);
-    });
-    _service.loadCaptains();
-    _service.subscribeToCaptainsChanges();
+    // Use local mock data only (no backend)
+    _loadMockData();
   }
 
   @override
   void dispose() {
-    _subscription?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
   Future<void> _refresh() async {
-    await _service.loadCaptains(
-      city: _filterCity.isEmpty ? null : _filterCity,
-      status: _filterStatus.isEmpty ? null : _filterStatus,
-      position: _filterPosition.isEmpty ? null : _filterPosition,
-      query: _searchController.text.trim().isEmpty
-          ? null
-          : _searchController.text.trim(),
-    );
+    // Simulate refresh for mock data
+    await Future.delayed(const Duration(milliseconds: 250));
+    _loadMockData();
+    if (mounted) setState(() {});
   }
 
   @override
@@ -372,9 +359,39 @@ class _CaptainsManagementScreenState extends State<CaptainsManagementScreen> {
     );
     if (result != null) {
       if (captain == null) {
-        await _service.createCaptain(result);
+        // create local mock captain
+        final newCaptain = DeliveryCaptain(
+          id: 'mock-${DateTime.now().millisecondsSinceEpoch}',
+          name: result['name'] ?? '',
+          email: result['email'] ?? '',
+          phone: result['phone'] ?? '',
+          position: result['position'],
+          city: result['city'],
+          status: result['status'],
+          profileImage: result['profile_image'],
+        );
+        setState(() => _captains.insert(0, newCaptain));
       } else {
-        await _service.updateCaptain(captain.id, result);
+        // update local mock captain
+        final idx = _captains.indexWhere((c) => c.id == captain.id);
+        if (idx != -1) {
+          final updated = DeliveryCaptain(
+            id: captain.id,
+            name: result['name'] ?? captain.name,
+            email: result['email'] ?? captain.email,
+            phone: result['phone'] ?? captain.phone,
+            position: result['position'] ?? captain.position,
+            city: result['city'] ?? captain.city,
+            status: result['status'] ?? captain.status,
+            profileImage: result['profile_image'] ?? captain.profileImage,
+            performance: captain.performance,
+            tasks: captain.tasks,
+            completed: captain.completed,
+            rating: captain.rating,
+            totalDeliveries: captain.totalDeliveries,
+          );
+          setState(() => _captains[idx] = updated);
+        }
       }
       await _refresh();
     }
@@ -399,9 +416,43 @@ class _CaptainsManagementScreenState extends State<CaptainsManagementScreen> {
       ),
     );
     if (confirmed == true) {
-      await _service.deleteCaptain(captain.id);
+      // remove from local mock list
+      setState(() => _captains.removeWhere((c) => c.id == captain.id));
       await _refresh();
     }
+  }
+
+  void _loadMockData() {
+    _captains = [
+      DeliveryCaptain(
+        id: 'cap-001',
+        name: 'أحمد السالم',
+        email: 'ahmed@example.com',
+        phone: '+966500111222',
+        position: 'كابتن توصيل',
+        city: 'الرياض',
+        status: 'نشط',
+        rating: 4.7,
+        totalDeliveries: 120,
+        tasks: 5,
+        completed: 115,
+        profileImage: null,
+      ),
+      DeliveryCaptain(
+        id: 'cap-002',
+        name: 'سارة محمد',
+        email: 'sarah@example.com',
+        phone: '+966500333444',
+        position: 'مندوب',
+        city: 'جدة',
+        status: 'إجازة',
+        rating: 4.5,
+        totalDeliveries: 80,
+        tasks: 2,
+        completed: 78,
+        profileImage: null,
+      ),
+    ];
   }
 }
 

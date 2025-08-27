@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:provider/provider.dart';
-// removed unused app_bloc import
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/services/supabase_service.dart';
-import '../../core/services/auth_service.dart';
 import '../../core/design_system/design_system.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -15,71 +10,19 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  Map<String, dynamic>? _captain;
-  RealtimeChannel? _profileChannel;
-
-  String _formatDate(dynamic value) {
-    if (value == null) return '-';
-    try {
-      final d = DateTime.parse(value.toString());
-      final dd = d.day.toString().padLeft(2, '0');
-      final mm = d.month.toString().padLeft(2, '0');
-      final yyyy = d.year.toString();
-      return '$dd/$mm/$yyyy';
-    } catch (_) {
-      return value.toString();
-    }
-  }
-
-  String _formatLocation(dynamic value) {
-    try {
-      if (value == null) {
-        final city = _captain?['city']?.toString();
-        final region = _captain?['region']?.toString();
-        if (city != null &&
-            city.isNotEmpty &&
-            region != null &&
-            region.isNotEmpty) {
-          return '$city، $region';
-        }
-        if (city != null && city.isNotEmpty) return city;
-        if (region != null && region.isNotEmpty) return region;
-        return '-';
-      }
-      if (value is Map) {
-        final address = value['address']?.toString();
-        if (address != null && address.isNotEmpty) return address;
-        final lat = value['latitude']?.toString();
-        final lng = value['longitude']?.toString();
-        if (lat != null && lng != null) return '$lat, $lng';
-      }
-      if (value is String && value.trim().isNotEmpty) {
-        return value;
-      }
-    } catch (_) {}
-    return '-';
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    // Listen to AuthService changes to auto-refresh
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final auth = context.read<AuthService>();
-      setState(() => _captain = auth.captainProfile);
-      auth.addListener(_onAuthChanged);
-      _subscribeToCaptainRealtime();
-    });
-  }
-
-  void _onAuthChanged() {
-    if (!mounted) return;
-    final auth = context.read<AuthService>();
-    setState(() => _captain = auth.captainProfile);
-    // Ensure subscription follows the current captain id
-    _subscribeToCaptainRealtime();
-  }
+  // Mock profile data - no backend needed
+  final Map<String, dynamic> _captain = {
+    'name': 'عبد الرحمن الحطامي',
+    'phone': '+966501234567',
+    'email': 'abdulrahman@example.com',
+    'city': 'الرياض',
+    'region': 'المنطقة الوسطى',
+    'vehicle_type': 'دراجة نارية',
+    'license_number': 'ABC123456',
+    'join_date': '2024-01-15',
+    'total_deliveries': 156,
+    'rating': 4.8,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -120,79 +63,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   void dispose() {
-    try {
-      context.read<AuthService>().removeListener(_onAuthChanged);
-    } catch (_) {}
-    try {
-      _profileChannel?.unsubscribe();
-    } catch (_) {}
     super.dispose();
   }
 
   Future<void> _refreshProfile() async {
-    final id = _captain?['id']?.toString();
-    if (id == null || id.isEmpty) return;
-    try {
-      final data = await SupabaseService.client
-          .from('delivery_captains')
-          .select('*')
-          .eq('id', id)
-          .single();
-      if (!mounted) return;
-      setState(() {
-        _captain = Map<String, dynamic>.from(data);
-      });
-    } catch (_) {}
+    // Mock refresh - no backend needed
+    await Future.delayed(const Duration(milliseconds: 500));
   }
 
-  void _subscribeToCaptainRealtime() {
-    final id = _captain?['id']?.toString();
-    if (id == null || id.isEmpty) return;
+  String _formatDate(dynamic value) {
+    if (value == null) return '-';
     try {
-      _profileChannel?.unsubscribe();
-      final channel = SupabaseService.client.channel(
-        'public:delivery_captains',
-      );
-      channel.on(
-        RealtimeListenTypes.postgresChanges,
-        ChannelFilter(event: '*', schema: 'public', table: 'delivery_captains'),
-        (payload, [ref]) {
-          // Keep callback synchronous; delegate async work
-          _handleProfileChange(id);
-        },
-      );
-      channel.subscribe();
-      _profileChannel = channel;
-    } catch (_) {}
+      final d = DateTime.parse(value.toString());
+      final dd = d.day.toString().padLeft(2, '0');
+      final mm = d.month.toString().padLeft(2, '0');
+      final yyyy = d.year.toString();
+      return '$dd/$mm/$yyyy';
+    } catch (_) {
+      return value.toString();
+    }
   }
 
-  Future<void> _handleProfileChange(String id) async {
+  String _formatLocation(dynamic value) {
     try {
-      final data = await SupabaseService.client
-          .from('delivery_captains')
-          .select('*')
-          .eq('id', id)
-          .single();
-      if (!mounted) return;
-      setState(() {
-        _captain = Map<String, dynamic>.from(data);
-      });
+      if (value == null) {
+        final city = _captain['city']?.toString();
+        final region = _captain['region']?.toString();
+        if (city != null &&
+            city.isNotEmpty &&
+            region != null &&
+            region.isNotEmpty) {
+          return '$city، $region';
+        }
+        if (city != null && city.isNotEmpty) return city;
+        if (region != null && region.isNotEmpty) return region;
+        return '-';
+      }
+      if (value is Map) {
+        final address = value['address']?.toString();
+        if (address != null && address.isNotEmpty) return address;
+        final lat = value['latitude']?.toString();
+        final lng = value['longitude']?.toString();
+        if (lat != null && lng != null) return '$lat, $lng';
+      }
+      if (value is String && value.trim().isNotEmpty) {
+        return value;
+      }
     } catch (_) {}
+    return '-';
   }
 
   Widget _buildProfileHeader(bool isDark) {
-    final String name =
-        (_captain?['name'] as String?)?.trim().isNotEmpty == true
-        ? _captain!['name']
-        : 'الموصل';
-    final String subtitle =
-        (_captain?['position'] as String?)?.trim().isNotEmpty == true
-        ? _captain!['position']
-        : 'موصل مياه';
-    final String? imageUrl =
-        (_captain?['profile_image'] as String?)?.trim().isNotEmpty == true
-        ? _captain!['profile_image']
-        : null;
+    final String name = _captain['name'] ?? 'الموصل';
+    final String subtitle = 'موصل مياه';
+    final String? imageUrl = null; // No profile image in mock data
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),

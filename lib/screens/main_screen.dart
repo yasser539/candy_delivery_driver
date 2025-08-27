@@ -1,8 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../blocs/app_bloc.dart';
-import '../core/services/app_settings.dart';
-import '../core/services/supabase_service.dart';
 import '../widgets/navigation/navigation_wrapper.dart';
 import 'home/home_screen.dart';
 import 'orders/orders_screen.dart';
@@ -17,44 +13,14 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
+class _MainScreenState extends State<MainScreen> {
   late PageController _pageController;
-  // Removed custom transition animations to prefer native PageView behavior
+  int _currentIndex = 2; // Start with home screen
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: 2); // Start with home screen
-    // No custom animations
-
-    // Initialize app settings
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
-      final appSettings = context.read<AppSettings>();
-      await appSettings.initialize();
-      // Backend health check (best-effort, non-blocking UI)
-      try {
-        final health = await SupabaseService.healthCheck();
-        if (!mounted) return;
-        final missingCols = (health['has_columns'] as Map<String, bool>).entries
-            .where((e) => e.value == false)
-            .map((e) => e.key)
-            .toList();
-        final hasRpc = health['has_accept_cart_rpc'] == true;
-        if (missingCols.isNotEmpty || !hasRpc) {
-          final msg = !hasRpc
-              ? 'تنبيه: دالة accept_cart غير موجودة. يُفضّل إنشاءها لتحسين الأمان.'
-              : 'تنبيه: أعمدة مفقودة في carts: ${missingCols.join(', ')}';
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(msg),
-              backgroundColor: Colors.orange,
-              duration: const Duration(seconds: 5),
-            ),
-          );
-        }
-      } catch (_) {}
-    });
+    _pageController = PageController(initialPage: _currentIndex);
   }
 
   @override
@@ -64,10 +30,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 
   void _onPageChanged(int index) {
-    final appBloc = context.read<AppBloc>();
-    if (appBloc.currentIndex != index) {
-      appBloc.add(SetCurrentIndexEvent(index));
-    }
+    setState(() {
+      _currentIndex = index;
+    });
   }
 
   void _onNavTap(int index) {
@@ -82,36 +47,20 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AppBloc>(
-      builder: (context, appBloc, child) {
-        // Update page controller when current index changes
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted || !_pageController.hasClients) return;
-          if (_pageController.page?.round() != appBloc.currentIndex) {
-            _pageController.animateToPage(
-              appBloc.currentIndex,
-              duration: const Duration(milliseconds: 400),
-              curve: Curves.easeInOutCubic,
-            );
-          }
-        });
-
-        return NavigationWrapper(
-          onNavTap: _onNavTap,
-          child: PageView(
-            controller: _pageController,
-            onPageChanged: _onPageChanged,
-            physics: const BouncingScrollPhysics(),
-            children: const [
-              ProfileScreen(),
-              MapScreen(),
-              HomeScreen(),
-              OrdersScreen(),
-              SettingsScreen(),
-            ],
-          ),
-        );
-      },
+    return NavigationWrapper(
+      onNavTap: _onNavTap,
+      child: PageView(
+        controller: _pageController,
+        onPageChanged: _onPageChanged,
+        physics: const BouncingScrollPhysics(),
+        children: [
+          ProfileScreen(),
+          MapScreen(),
+          HomeScreen(),
+          OrdersScreen(),
+          SettingsScreen(),
+        ],
+      ),
     );
   }
 }

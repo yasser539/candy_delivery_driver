@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:provider/provider.dart';
-import '../../blocs/app_bloc.dart';
 import '../../core/design_system/design_system.dart';
 import '../../widgets/earnings_card.dart';
 // import '../../widgets/currency_icon.dart';
@@ -19,14 +17,14 @@ class _EarningsScreenState extends State<EarningsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final appBloc = Provider.of<AppBloc>(context);
-    final isDark = appBloc.isDarkMode;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor:
-            isDark ? DesignSystem.darkBackground : DesignSystem.background,
+        backgroundColor: isDark
+            ? DesignSystem.darkBackground
+            : DesignSystem.background,
         appBar: ModernAppBar(
           title: 'الأرباح',
           actions: [
@@ -220,50 +218,7 @@ class _EarningsScreenState extends State<EarningsScreen> {
     );
   }
 
-  Widget _buildStatItem(
-    String title,
-    String value,
-    IconData icon,
-    Color color,
-    bool isDark,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isDark ? DesignSystem.darkSurface : DesignSystem.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withOpacity(0.2),
-        ),
-      ),
-      child: Column(
-        children: [
-          FaIcon(
-            icon,
-            color: color,
-            size: 20,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            style: DesignSystem.bodySmall.copyWith(
-              color: DesignSystem.textSecondary,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: DesignSystem.titleMedium.copyWith(
-              color: DesignSystem.textPrimary,
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
+  // helper removed (unused in mock mode)
 
   Widget _buildTransactionItem(
     String orderId,
@@ -278,9 +233,7 @@ class _EarningsScreenState extends State<EarningsScreen> {
       decoration: BoxDecoration(
         color: isDark ? DesignSystem.darkSurface : DesignSystem.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withOpacity(0.2),
-        ),
+        border: Border.all(color: color.withOpacity(0.2)),
       ),
       child: Row(
         children: [

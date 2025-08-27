@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../blocs/app_bloc.dart';
-import 'navigation/candy_navigation_bar.dart';
+// provider and app-bloc removed (no backend)
 import '../core/design_system/design_system.dart';
-import '../core/services/app_settings.dart';
+import 'candy_navigation_bar.dart';
 
 class NavigationWrapper extends StatelessWidget {
   final Widget child;
@@ -19,32 +17,24 @@ class NavigationWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<AppSettings, AppBloc>(
-      builder: (context, appSettings, appBloc, _) {
-        final isDarkMode = appSettings.isDarkMode;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-        return Scaffold(
-          backgroundColor: isDarkMode
-              ? DesignSystem.darkBackground
-              : DesignSystem.background,
-          body: Stack(
-            children: [
-              // Main content
-              child,
+    return Scaffold(
+      backgroundColor: isDarkMode
+          ? DesignSystem.darkBackground
+          : DesignSystem.background,
+      body: Stack(
+        children: [
+          // Main content
+          child,
 
-              // Navigation bar at bottom
-              CandyNavigationBar(
-                onNavTap: onNavTap ??
-                    (index) {
-                      if (appBloc.currentIndex != index) {
-                        appBloc.add(SetCurrentIndexEvent(index));
-                      }
-                    },
-              ),
-            ],
+          // Navigation bar at bottom
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: CandyNavigationBar(onNavTap: onNavTap ?? (index) {}),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }

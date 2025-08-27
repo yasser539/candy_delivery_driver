@@ -1,10 +1,8 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:provider/provider.dart';
 import '../../core/design_system/design_system.dart';
-import '../../core/services/order_service.dart';
 import '../../models/order.dart';
+import '../../models/location.dart';
 import '../../widgets/currency_icon.dart';
 import '../../widgets/modern_app_bar.dart';
 
@@ -16,37 +14,33 @@ class AdminOrdersScreen extends StatefulWidget {
 }
 
 class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
-  late OrderService _orderService;
-  List<Order> _pendingReviewOrders = [];
-  StreamSubscription? _adminOrdersSubscription;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeOrderService();
-  }
-
-  void _initializeOrderService() {
-    // Get OrderService from Provider
-    _orderService = Provider.of<OrderService>(context, listen: false);
-
-    // Initialize with admin role if not already initialized
-    if (_orderService.getAdminOrders().isEmpty) {
-      _orderService.initialize('admin_001');
-    }
-
-    _adminOrdersSubscription = _orderService.adminOrdersStream.listen((orders) {
-      if (mounted) {
-        setState(() {
-          _pendingReviewOrders = orders;
-        });
-      }
-    });
-  }
+  // Local mock orders for admin review (no backend)
+  List<Order> _pendingReviewOrders = [
+    Order(
+      id: 'admin-mock-001',
+      customerName: 'محمد صالح',
+      customerPhone: '+966500000001',
+      pickupLocation: Location(
+        latitude: 24.71,
+        longitude: 46.67,
+        address: 'الرياض',
+        timestamp: DateTime.now(),
+      ),
+      deliveryLocation: Location(
+        latitude: 24.72,
+        longitude: 46.68,
+        address: 'التحلية',
+        timestamp: DateTime.now(),
+      ),
+      amount: 30.0,
+      paymentMethod: PaymentMethod.cash,
+      status: OrderStatus.underReview,
+      createdAt: DateTime.now(),
+    ),
+  ];
 
   @override
   void dispose() {
-    _adminOrdersSubscription?.cancel();
     super.dispose();
   }
 
@@ -181,29 +175,26 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   }
 
   void _approveOrder(Order order) async {
-    final success = await _orderService.approveOrder(order.id);
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('تمت الموافقة على الطلب #${order.id}'),
-          backgroundColor: DesignSystem.success,
-        ),
-      );
-    }
+    // Mock approve: remove from pending list and show feedback
+    if (!mounted) return;
+    setState(() => _pendingReviewOrders.removeWhere((o) => o.id == order.id));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('تمت الموافقة على الطلب #${order.id} (Mock)'),
+        backgroundColor: DesignSystem.success,
+      ),
+    );
   }
 
   void _rejectOrder(Order order) async {
-    final success = await _orderService.updateOrderStatus(
-      order.id,
-      OrderStatus.cancelled,
+    // Mock reject: remove from pending list and show feedback
+    if (!mounted) return;
+    setState(() => _pendingReviewOrders.removeWhere((o) => o.id == order.id));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('تم رفض الطلب #${order.id} (Mock)'),
+        backgroundColor: DesignSystem.error,
+      ),
     );
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('تم رفض الطلب #${order.id}'),
-          backgroundColor: DesignSystem.error,
-        ),
-      );
-    }
   }
 }

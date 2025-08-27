@@ -1,15 +1,11 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:provider/provider.dart';
-import '../../blocs/app_bloc.dart';
 import '../../core/design_system/design_system.dart';
 import '../../core/design_system/platform_ui_standards.dart';
-import '../../core/services/cart_service.dart';
 import '../../models/cart.dart';
+import '../../models/location.dart';
+import '../../models/cart_item.dart';
 import '../../widgets/cart_card.dart';
-import '../../core/services/supabase_service.dart';
-import '../../core/services/auth_service.dart';
 
 class AvailableCartsScreen extends StatefulWidget {
   const AvailableCartsScreen({super.key});
@@ -19,35 +15,55 @@ class AvailableCartsScreen extends StatefulWidget {
 }
 
 class _AvailableCartsScreenState extends State<AvailableCartsScreen> {
-  late CartService _cartService;
+  // Local mock cart list - no backend/service calls
   List<Cart> _availableCarts = [];
-  StreamSubscription? _availableCartsSubscription;
 
   @override
   void initState() {
     super.initState();
-    _initializeCartService();
+    _loadMockData();
   }
 
-  void _initializeCartService() {
-    _cartService = Provider.of<CartService>(context, listen: false);
-    final auth = Provider.of<AuthService>(context, listen: false);
-    final supabaseUserId = SupabaseService.getCurrentUser()?.id;
-    final driverId = supabaseUserId ??
-        auth.captainProfile?['auth_user_id']?.toString() ??
-        auth.captainProfile?['id']?.toString() ??
-        'driver_001';
-    _cartService.initialize(driverId);
-
-    _availableCartsSubscription =
-        _cartService.availableCartsStream.listen((carts) {
-      if (mounted) setState(() => _availableCarts = carts);
-    });
+  void _loadMockData() {
+    _availableCarts = [
+      Cart(
+        id: 'mock-001',
+        customerId: 'customer-001',
+        customerName: 'أحمد محمد',
+        customerPhone: '+966501234567',
+        totalAmount: 45.0,
+        status: CartStatus.pending,
+        pickupLocation: Location(
+          latitude: 24.7136,
+          longitude: 46.6753,
+          address: 'شارع الملك فهد، الرياض',
+          timestamp: DateTime.now(),
+        ),
+        deliveryLocation: Location(
+          latitude: 24.7136,
+          longitude: 46.6753,
+          address: 'شارع التحلية، الرياض',
+          timestamp: DateTime.now(),
+        ),
+        items: [
+          CartItem(
+            id: 'item-001',
+            cartId: 'mock-001',
+            productId: 'product-001',
+            productName: 'مياه عذبة 5 لتر',
+            productPrice: 15.0,
+            quantity: 3,
+            totalPrice: 45.0,
+          ),
+        ],
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+    ];
   }
 
   @override
   void dispose() {
-    _availableCartsSubscription?.cancel();
     super.dispose();
   }
 
@@ -77,8 +93,10 @@ class _AvailableCartsScreenState extends State<AvailableCartsScreen> {
             children: [
               // ====== عداد الطلبات المتاحة ======
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     Container(
@@ -128,7 +146,8 @@ class _AvailableCartsScreenState extends State<AvailableCartsScreen> {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(
-                                  PlatformUIStandards.cardRadius),
+                                PlatformUIStandards.cardRadius,
+                              ),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withOpacity(0.05),
@@ -194,9 +213,7 @@ class _AvailableCartsScreenState extends State<AvailableCartsScreen> {
           Text(
             'ستظهر الطلبات الجديدة هنا عند توفرها',
             textAlign: TextAlign.center,
-            style: DesignSystem.bodyMedium.copyWith(
-              color: Colors.grey[600],
-            ),
+            style: DesignSystem.bodyMedium.copyWith(color: Colors.grey[600]),
           ),
         ],
       ),
@@ -204,91 +221,24 @@ class _AvailableCartsScreenState extends State<AvailableCartsScreen> {
   }
 
   void _acceptCart(Cart cart) async {
-    try {
-      final success = await _cartService.acceptCart(cart.id);
-      if (!mounted) return;
-      if (success) {
-        setState(() {
-          _availableCarts.removeWhere((c) => c.id == cart.id);
-        });
-        // الذهاب لتبويب الطلبات
-        try {
-          final appBloc = context.read<AppBloc>();
-          appBloc.add(SetCurrentIndexEvent(3));
-        } catch (_) {}
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('تم قبول الطلب #${cart.id.substring(0, 8)}'),
-            backgroundColor: DesignSystem.success,
-          ),
-        );
-      } else {
-        // تحقق من الحالة الفعلية ومعالجة الحالات المتسارعة
-        try {
-          final latest = await _cartService.getCartById(cart.id);
-          if (!mounted) return;
-          final myDriverId = Provider.of<AuthService>(context, listen: false)
-              .captainProfile?['id']
-              ?.toString();
-          if (latest != null && latest.driverId == myDriverId) {
-            setState(() {
-              _availableCarts.removeWhere((c) => c.id == cart.id);
-            });
-            try {
-              final appBloc = context.read<AppBloc>();
-              appBloc.add(SetCurrentIndexEvent(3));
-            } catch (_) {}
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('تم قبول الطلب #${cart.id.substring(0, 8)}'),
-                backgroundColor: DesignSystem.success,
-              ),
-            );
-            return;
-          }
-          if (latest != null &&
-              latest.driverId != null &&
-              latest.driverId != myDriverId) {
-            setState(() {
-              _availableCarts.removeWhere((c) => c.id == cart.id);
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                    'تم حجز الطلب #${cart.id.substring(0, 8)} بواسطة موصل آخر'),
-                backgroundColor: DesignSystem.error,
-              ),
-            );
-            return;
-          }
-        } catch (_) {}
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('فشل في قبول الطلب #${cart.id.substring(0, 8)}'),
-            backgroundColor: DesignSystem.error,
-          ),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('حدث خطأ أثناء قبول الطلب'),
-          backgroundColor: DesignSystem.error,
-        ),
-      );
-    }
+    // Mock accept: remove from list and notify (no backend)
+    if (!mounted) return;
+    setState(() => _availableCarts.removeWhere((c) => c.id == cart.id));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('تم قبول الطلب #${cart.id.substring(0, 8)} (Mock)'),
+        backgroundColor: DesignSystem.success,
+      ),
+    );
   }
 
   void _rejectCart(Cart cart) async {
-    final success =
-        await _cartService.updateCartStatus(cart.id, CartStatus.cancelled);
+    // Mock reject: remove from list and notify
+    if (!mounted) return;
+    setState(() => _availableCarts.removeWhere((c) => c.id == cart.id));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(success
-            ? 'تم رفض الطلب #${cart.id.substring(0, 8)}'
-            : 'فشل في رفض الطلب #${cart.id.substring(0, 8)}'),
+        content: Text('تم رفض الطلب #${cart.id.substring(0, 8)} (Mock)'),
         backgroundColor: DesignSystem.error,
         duration: const Duration(seconds: 2),
       ),

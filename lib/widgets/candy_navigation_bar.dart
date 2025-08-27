@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import '../core/design_system/design_system.dart';
-import 'package:provider/provider.dart';
-import '../blocs/app_bloc.dart';
 import 'dart:ui';
 
 class CandyNavigationBar extends StatefulWidget {
-  const CandyNavigationBar({super.key});
+  final Function(int)? onNavTap;
+  
+  const CandyNavigationBar({super.key, this.onNavTap});
 
   @override
   State<CandyNavigationBar> createState() => _CandyNavigationBarState();
@@ -38,8 +38,7 @@ class _CandyNavigationBarState extends State<CandyNavigationBar>
 
   @override
   Widget build(BuildContext context) {
-    final appBloc = Provider.of<AppBloc>(context);
-    final isDark = appBloc.isDarkMode;
+    final isDark = MediaQuery.of(context).platformBrightness == Brightness.dark;
 
     return AnimatedBuilder(
       animation: _slideAnimation,
@@ -136,36 +135,33 @@ class _CandyNavigationBarState extends State<CandyNavigationBar>
                           _buildModernNavItem(
                             icon: Icons.person,
                             label: 'حسابي',
-                            isActive: appBloc.currentIndex == 0,
-                            onTap: () => appBloc.setCurrentIndex(0),
+                            isActive: false,
+                            onTap: () => widget.onNavTap?.call(0),
                           ),
                           _buildModernNavItem(
                             icon: Icons.map,
                             label: 'الخريطة',
-                            isActive: appBloc.currentIndex == 1,
-                            onTap: () => appBloc.setCurrentIndex(1),
+                            isActive: false,
+                            onTap: () => widget.onNavTap?.call(1),
                           ),
                           _buildModernNavItem(
                             icon: Icons.home,
                             label: 'الرئيسية',
-                            isActive: appBloc.currentIndex == 2,
-                            onTap: () => appBloc.setCurrentIndex(2),
+                            isActive: true,
+                            onTap: () => widget.onNavTap?.call(2),
                             isHome: true,
                           ),
                           _buildModernNavItem(
                             icon: Icons.local_shipping,
                             label: 'الطلبات',
-                            isActive: appBloc.currentIndex == 3,
-                            onTap: () => appBloc.setCurrentIndex(3),
-                            badge: appBloc.pendingOrdersCount > 0
-                                ? appBloc.pendingOrdersCount
-                                : null,
+                            isActive: false,
+                            onTap: () => widget.onNavTap?.call(3),
                           ),
                           _buildModernNavItem(
                             icon: Icons.settings,
                             label: 'الإعدادات',
-                            isActive: appBloc.currentIndex == 4,
-                            onTap: () => appBloc.setCurrentIndex(4),
+                            isActive: false,
+                            onTap: () => widget.onNavTap?.call(4),
                           ),
                         ],
                       ),
@@ -188,6 +184,7 @@ class _CandyNavigationBarState extends State<CandyNavigationBar>
     int? badge,
     bool isHome = false,
   }) {
+    final isDark = MediaQuery.of(context).platformBrightness == Brightness.dark;
     return RepaintBoundary(
       child: GestureDetector(
         onTap: onTap,
@@ -240,79 +237,58 @@ class _CandyNavigationBarState extends State<CandyNavigationBar>
                                       .createShader(bounds);
                                 },
                                 blendMode: BlendMode.srcIn,
-                                child:
-                                    Icon(icon, color: Colors.white, size: 20),
+                                child: Icon(icon, size: 20),
                               ),
                             )
-                          : AnimatedScale(
-                              scale: isActive ? 1.05 : 1.0,
-                              duration: const Duration(milliseconds: 200),
-                              curve: Curves.easeOutCubic,
-                              child: Icon(
-                                icon,
-                                color: Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? Colors.grey[500]
-                                    : Colors.grey[600],
-                                size: 24,
-                              ),
+                          : Icon(
+                              icon,
+                              color: isDark
+                                  ? DesignSystem.textInverse
+                                  : DesignSystem.textPrimary,
+                              size: 20,
                             ),
-                  if (badge != null)
+                  if (badge != null && badge > 0)
                     Positioned(
-                      right: 0,
-                      top: 0,
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeOutCubic,
+                      top: -2,
+                      right: -2,
+                      child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 6,
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.red[500],
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.red[500]!.withOpacity(0.3),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
+                          color: DesignSystem.error,
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         constraints: const BoxConstraints(
-                          minWidth: 18,
-                          minHeight: 18,
+                          minWidth: 20,
+                          minHeight: 20,
                         ),
-                        child: Center(
-                          child: Text(
-                            badge.toString(),
-                            style: const TextStyle(
-                              fontFamily: 'Rubik',
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        child: Text(
+                          badge.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
                           ),
+                          textAlign: TextAlign.center,
                         ),
                       ),
                     ),
                 ],
               ),
-              const SizedBox(height: 2),
-              AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutCubic,
+              const SizedBox(height: 4),
+              Text(
+                label,
                 style: TextStyle(
-                  fontFamily: 'Rubik',
-                  fontSize: 10,
                   color: isActive
                       ? DesignSystem.primary
-                      : Theme.of(context).brightness == Brightness.dark
-                          ? Colors.grey[500]
-                          : Colors.grey[600],
-                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                      : isDark
+                          ? DesignSystem.textInverse
+                          : DesignSystem.textPrimary,
+                  fontSize: 12,
+                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                 ),
-                child: Text(label),
               ),
             ],
           ),

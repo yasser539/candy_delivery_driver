@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:provider/provider.dart';
-// removed unused app_bloc import
 import '../../core/design_system/design_system.dart';
-import '../../core/services/auth_service.dart';
-import '../../core/services/app_settings.dart';
-import '../auth/login_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -22,17 +17,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    final settings = Provider.of<AppSettings>(context, listen: false);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      setState(() {
-        _themeMode = settings.themeMode == ThemeMode.system
-            ? 'system'
-            : settings.themeMode == ThemeMode.dark
-            ? 'dark'
-            : 'light';
-      });
-    });
+    // Mock settings - no backend needed
+    _themeMode = 'system';
   }
 
   @override
@@ -105,14 +91,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     children: [
                       _buildThemeChips(isDark),
                       SwitchListTile.adaptive(
-                        value: Provider.of<AppSettings>(context).isDarkMode,
+                        value: false, // Mock dark mode setting
                         onChanged: (v) async {
-                          final settings = Provider.of<AppSettings>(
-                            context,
-                            listen: false,
-                          );
-                          await settings.setDarkMode(v);
-                          if (!mounted) return;
+                          // Mock dark mode change - no backend needed
                           setState(() {
                             _themeMode = v ? 'dark' : 'light';
                           });
@@ -278,9 +259,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _setThemeMode(String mode) async {
-    final settings = Provider.of<AppSettings>(context, listen: false);
-    await settings.setThemeMode(mode);
-    if (!mounted) return;
+    // Mock theme mode change - no backend needed
     setState(() {
       _themeMode = mode;
     });
@@ -432,36 +411,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(dialogContext);
-              try {
-                final authService = Provider.of<AuthService>(
-                  this.context,
-                  listen: false,
-                );
-                await authService.signOut();
-
-                // الانتقال لشاشة تسجيل الدخول
-                if (!mounted) return;
-                Navigator.of(this.context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  (route) => false, // حذف جميع الشاشات السابقة
-                );
-
-                if (!mounted) return;
-                ScaffoldMessenger.of(this.context).showSnackBar(
-                  SnackBar(
-                    content: Text('تم تسجيل الخروج بنجاح'),
-                    backgroundColor: DesignSystem.success,
-                  ),
-                );
-              } catch (e) {
-                if (!mounted) return;
-                ScaffoldMessenger.of(this.context).showSnackBar(
-                  SnackBar(
-                    content: Text('خطأ في تسجيل الخروج: ${e.toString()}'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
+              // Mock logout - no backend needed
+              ScaffoldMessenger.of(this.context).showSnackBar(
+                SnackBar(
+                  content: Text('تم تسجيل الخروج بنجاح'),
+                  backgroundColor: DesignSystem.success,
+                ),
+              );
             },
             child: const Text('تأكيد'),
           ),

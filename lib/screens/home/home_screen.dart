@@ -1,35 +1,14 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '../../blocs/app_bloc.dart';
+import 'package:geolocator/geolocator.dart';
+
 import '../../core/design_system/design_system.dart';
-import '../../core/services/cart_service.dart';
-import '../../core/services/auth_service.dart';
-import '../../core/services/supabase_test.dart';
-import '../../core/services/attendance_service.dart';
-import '../../core/services/supabase_service.dart';
 import '../../models/cart.dart';
+import '../../models/location.dart';
+import '../../models/cart_item.dart';
 import '../../widgets/currency_icon.dart';
-// removed unused imports
 
-// Global manager for accepted carts (used by Orders screen)
-class AcceptedCartsManager {
-  static final List<Map<String, dynamic>> _acceptedCarts = [];
-
-  static void addCart(Map<String, dynamic> cartData) {
-    _acceptedCarts.add(cartData);
-  }
-
-  static List<Map<String, dynamic>> getAcceptedCarts() {
-    return List.from(_acceptedCarts);
-  }
-
-  static void clearCarts() {
-    _acceptedCarts.clear();
-  }
-}
+// Mock data manager - no backend needed
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -38,78 +17,112 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late CartService _cartService;
-  late AttendanceService _attendanceService;
   List<Cart> _availableCarts = [];
   bool _isOnline = true;
   bool _isUpdatingStatus = false;
   DateTime? _statusTimestamp;
   Position? _statusPosition;
   String? _statusError;
-  StreamSubscription? _availableCartsSubscription;
-  StreamSubscription<int>? _attendanceSubscription;
   int _monthlyDays = 0;
 
   @override
   void initState() {
     super.initState();
-    _cartService = Provider.of<CartService>(context, listen: false);
-    _attendanceService = Provider.of<AttendanceService>(context, listen: false);
-    // استخدم معرف السائق الحقيقي إن وجد، وإلا استخدم قيمة افتراضية للتجربة
-    final auth = Provider.of<AuthService>(context, listen: false);
-    final supabaseUserId = SupabaseService.getCurrentUser()?.id;
-    final driverId =
-        supabaseUserId ??
-        auth.captainProfile?['auth_user_id']?.toString() ??
-        auth.captainProfile?['id']?.toString() ??
-        'driver_001';
-    _cartService.initialize(driverId);
-    _attendanceService.initialize('driver_001');
-    SupabaseTest.testConnection();
-    SupabaseTest.testCartsTable();
 
-    _availableCartsSubscription = _cartService.availableCartsStream.listen((
-      carts,
-    ) {
-      if (mounted) setState(() => _availableCarts = carts);
-    });
+    // Load mock data instead of backend
+    _loadMockData();
+    _monthlyDays = 15; // Mock working days
 
-    _attendanceSubscription = _attendanceService.monthlyDaysStream.listen((
-      days,
-    ) {
-      if (mounted) setState(() => _monthlyDays = days);
-    });
-
-    // التقاط الحالة الأولية إذا كان متصلاً
     _captureStatusIfOnline();
-
-    // Don't add mock data here - let CartService handle it
-    // Timer(const Duration(seconds: 3), () {
-    //   if (mounted && _availableCarts.isEmpty) {
-    //     _addMockData();
-    //   }
-    // });
   }
-
-  // Removed unused _addMockData helper
 
   @override
   void dispose() {
-    _availableCartsSubscription?.cancel();
-    _attendanceSubscription?.cancel();
     super.dispose();
   }
 
+  void _loadMockData() {
+    // Mock available carts data
+    _availableCarts = [
+      Cart(
+        id: 'mock-001',
+        customerId: 'customer-001',
+        customerName: 'أحمد محمد',
+        customerPhone: '+966501234567',
+        totalAmount: 45.0,
+        status: CartStatus.pending,
+        pickupLocation: Location(
+          latitude: 24.7136,
+          longitude: 46.6753,
+          address: 'شارع الملك فهد، الرياض',
+          timestamp: DateTime.now().subtract(const Duration(minutes: 30)),
+        ),
+        deliveryLocation: Location(
+          latitude: 24.7136,
+          longitude: 46.6753,
+          address: 'شارع التحلية، الرياض',
+          timestamp: DateTime.now().subtract(const Duration(minutes: 30)),
+        ),
+        items: [
+          CartItem(
+            id: 'item-001',
+            cartId: 'mock-001',
+            productId: 'product-001',
+            productName: 'مياه عذبة 5 لتر',
+            productPrice: 15.0,
+            quantity: 3,
+            totalPrice: 45.0,
+          ),
+        ],
+        createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
+        updatedAt: DateTime.now().subtract(const Duration(minutes: 30)),
+        driverId: null,
+      ),
+      Cart(
+        id: 'mock-002',
+        customerId: 'customer-002',
+        customerName: 'فاطمة علي',
+        customerPhone: '+966507654321',
+        totalAmount: 60.0,
+        status: CartStatus.pending,
+        pickupLocation: Location(
+          latitude: 24.7136,
+          longitude: 46.6753,
+          address: 'شارع العليا، الرياض',
+          timestamp: DateTime.now().subtract(const Duration(minutes: 15)),
+        ),
+        deliveryLocation: Location(
+          latitude: 24.7136,
+          longitude: 46.6753,
+          address: 'شارع الملك عبدالله، الرياض',
+          timestamp: DateTime.now().subtract(const Duration(minutes: 15)),
+        ),
+        items: [
+          CartItem(
+            id: 'item-002',
+            cartId: 'mock-002',
+            productId: 'product-002',
+            productName: 'مياه معدنية 1.5 لتر',
+            productPrice: 15.0,
+            quantity: 4,
+            totalPrice: 60.0,
+          ),
+        ],
+        createdAt: DateTime.now().subtract(const Duration(minutes: 15)),
+        updatedAt: DateTime.now().subtract(const Duration(minutes: 15)),
+        driverId: null,
+      ),
+    ];
+  }
+
   Future<void> _refresh() async {
-    await Future.delayed(const Duration(milliseconds: 600));
-    // Reload data from Supabase
-    _cartService.initialize('driver_001');
+    await Future.delayed(const Duration(milliseconds: 300));
+    // Reload mock data
+    _loadMockData();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Listen to auth changes to rebuild header (name/photo)
-    context.watch<AuthService>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Directionality(
@@ -139,7 +152,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             title: 'الطلبات المتاحة',
                             count: _availableCarts.length,
                             icon: FontAwesomeIcons.bell,
-                            // filled with gradient
                             gradient: DesignSystem.primaryGradient,
                             outlined: false,
                           ),
@@ -150,7 +162,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             title: 'أيام العمل هذا الشهر',
                             count: _monthlyDays,
                             icon: FontAwesomeIcons.calendarCheck,
-                            // outlined with gradient stroke
                             gradient: DesignSystem.primaryGradient,
                             outlined: true,
                           ),
@@ -163,7 +174,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 0),
                     child: Row(
                       children: [
-                        // Title without icon, colored white per request
                         Expanded(
                           child: Text(
                             'الطلبات المتاحة',
@@ -222,6 +232,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             (cart) => CartCard(
                               cart: cart,
                               isActive: false,
+                              // keep button but no functionality
                               onAccept: () => _acceptCart(cart),
                               onReject: () => _rejectCart(cart),
                             ),
@@ -239,17 +250,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHeader(bool isDark) {
-    final auth = context.read<AuthService>();
-    final profile = auth.captainProfile;
-    final displayName = (profile?['name'] as String?)?.trim().isNotEmpty == true
-        ? profile!['name']
-        : 'سائق التوصيل';
-    // Restore avatar; remove online/time/switch, keep location under name
+    // Mock user profile - no backend needed
+    final displayName = 'عبد الرحمن الحطامي';
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
         children: [
-          // Truck icon on the right side (appears visually right because parent Directionality is RTL)
           ShaderMask(
             shaderCallback: (rect) => DesignSystem.primaryGradient.createShader(
               Rect.fromLTWH(0, 0, rect.width, rect.height),
@@ -278,7 +284,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(height: 6),
-                // Location only
                 if (_statusPosition != null || _statusError != null)
                   Row(
                     children: [
@@ -311,92 +316,26 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSectionHeader(String title, IconData icon, bool isDark) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            gradient: DesignSystem.primaryGradient,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: DesignSystem.getBrandShadow('light'),
-          ),
-          child: FaIcon(icon, color: Colors.white, size: 18),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            title,
-            style: DesignSystem.titleMedium.copyWith(
-              fontWeight: FontWeight.bold,
-              color: DesignSystem.textPrimary,
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
+  void _acceptCart(Cart cart) {
+    // Intentionally disabled — keep button with no behavior
+    // If you prefer a message, uncomment next 3 lines:
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   const SnackBar(content: Text('ميزة قبول الطلب غير مفعّلة في وضع العرض')),
+    // );
   }
 
-  void _acceptCart(Cart cart) async {
-    // UI-only accept: add a lightweight accepted record and remove from available list
-    final itemsList = cart.items
-        .map((it) => (it.productName ?? it.toString()).toString())
-        .toList();
-
-    final cartData = {
-      'id': cart.id,
-      'customerName': cart.customerName,
-      'customerPhone': cart.customerPhone,
-      'totalAmount': cart.totalAmount,
-      'items': itemsList,
-      'status': 'تم التعيين',
-      'step': 2,
-    };
-
-    // keep this operation minimal and synchronous
-    AcceptedCartsManager.addCart(cartData);
-
-    if (!mounted) return;
-    // remove from available list quickly
-    setState(() {
-      _availableCarts.removeWhere((c) => c.id == cart.id);
-    });
-
-    // schedule navigation after the current frame to avoid heavy rebuilds during the tap
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      try {
-        final appBloc = context.read<AppBloc>();
-        appBloc.add(SetCurrentIndexEvent(3));
-      } catch (_) {}
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('تم قبول الطلب #${cart.id.substring(0, 8)}'),
-          backgroundColor: DesignSystem.success,
-        ),
-      );
-    });
-  }
-
-  void _rejectCart(Cart cart) async {
-    final success = await _cartService.updateCartStatus(
-      cart.id,
-      CartStatus.cancelled,
-    );
+  void _rejectCart(Cart cart) {
+    // Mock functionality - show success message
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          success
-              ? 'تم رفض الطلب #${cart.id.substring(0, 8)}'
-              : 'فشل في رفض الطلب #${cart.id.substring(0, 8)}',
-        ),
+        content: Text('تم رفض الطلب #${cart.id.substring(0, 8)} (Mock)'),
         backgroundColor: DesignSystem.error,
+        duration: const Duration(seconds: 2),
       ),
     );
   }
 
-  // ====== حضور/انصراف (متصل/غير متصل) مع تحديد الموقع والوقت ======
+  // ====== حضور/انصراف وموقع ======
   void _onOnlineToggled(bool value) async {
     setState(() {
       _isOnline = value;
@@ -407,17 +346,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (value) {
       await _captureLocation();
-      // تسجيل حضور
-      await _attendanceService.checkIn(
-        lat: _statusPosition?.latitude,
-        lng: _statusPosition?.longitude,
-      );
+      // Mock check-in - no backend needed
     } else {
-      // تسجيل انصراف
-      await _attendanceService.checkOut(
-        lat: _statusPosition?.latitude,
-        lng: _statusPosition?.longitude,
-      );
+      // Mock check-out - no backend needed
     }
 
     if (mounted) {
@@ -459,32 +390,23 @@ class _HomeScreenState extends State<HomeScreen> {
         _statusPosition = position;
         _statusError = null;
       });
-      // تحديث موقع حي
       try {
-        await _attendanceService.updateLiveLocation(
-          lat: position.latitude,
-          lng: position.longitude,
-        );
+        // Mock location update - no backend needed
       } catch (_) {}
     } catch (e) {
       if (!mounted) return;
       setState(() => _statusError = 'تعذر تحديد الموقع');
     }
   }
-
-  String _formatTime(DateTime time) {
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${two(time.hour)}:${two(time.minute)}';
-  }
 }
 
-// كارد الإحصائيات
+// ======= UI widgets below (unchanged) =======
+
 class _StatusCardModern extends StatelessWidget {
   final String title;
   final int count;
   final IconData icon;
-  final Color?
-  color; // optional when using gradient (kept for backward compatibility)
+  final Color? color;
   final LinearGradient? gradient;
   final bool outlined;
 
@@ -499,10 +421,7 @@ class _StatusCardModern extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Determine visuals based on outlined/filled and available gradient
-    // final useGradient = gradient != null; // not used
     if (outlined) {
-      // Gradient border with white inner background
       return Container(
         height: 64,
         decoration: BoxDecoration(
@@ -583,7 +502,6 @@ class _StatusCardModern extends StatelessWidget {
       );
     }
 
-    // Filled card with gradient background
     return Container(
       height: 64,
       decoration: BoxDecoration(
@@ -628,9 +546,9 @@ class _StatusCardModern extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+              children: const [
                 Text(
-                  title,
+                  'الطلبات المتاحة',
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 11,
@@ -638,16 +556,15 @@ class _StatusCardModern extends StatelessWidget {
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 1),
-                Text(
-                  '$count',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11,
-                    color: Colors.white,
-                  ),
-                ),
               ],
+            ),
+          ),
+          Text(
+            '$count',
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 11,
+              color: Colors.white,
             ),
           ),
         ],
@@ -676,7 +593,6 @@ class CartCard extends StatelessWidget {
     final Color cardColor = isDark
         ? DesignSystem.darkSurface
         : DesignSystem.surface;
-    // Text colors: black in light mode, readable in dark mode
     final Color textColor = isDark
         ? DesignSystem.darkTextPrimary
         : DesignSystem.textPrimary;
@@ -684,16 +600,15 @@ class CartCard extends StatelessWidget {
         ? Colors.white70
         : DesignSystem.textSecondary;
 
-    // sizes: orderTextSize remains large; other text reduced
-    final double baseTextSize = 12.0;
-    final double orderTextSize = 16.0;
-    final double cartIconSize = 18.0;
+    const double baseTextSize = 12.0;
+    const double orderTextSize = 16.0;
+    const double cartIconSize = 18.0;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
       decoration: BoxDecoration(
         color: cardColor,
-        borderRadius: BorderRadius.circular(22), // 🔥 كرت بزوايا أكثر نعومة
+        borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
@@ -707,7 +622,6 @@ class CartCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ===== رقم الطلب =====
             Row(
               textDirection: TextDirection.ltr,
               mainAxisAlignment: MainAxisAlignment.end,
@@ -732,7 +646,7 @@ class CartCard extends StatelessWidget {
                         Rect.fromLTWH(0, 0, rect.width, rect.height),
                       ),
                   blendMode: BlendMode.srcIn,
-                  child: FaIcon(
+                  child: const FaIcon(
                     FontAwesomeIcons.box,
                     size: 22,
                     color: Colors.white,
@@ -743,7 +657,6 @@ class CartCard extends StatelessWidget {
 
             const SizedBox(height: 19),
 
-            // ===== بيانات العميل =====
             Row(
               children: [
                 Expanded(
@@ -751,7 +664,6 @@ class CartCard extends StatelessWidget {
                     textDirection: TextDirection.ltr,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Left: phone icon + number (moved to visual left)
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Row(
@@ -768,7 +680,7 @@ class CartCard extends StatelessWidget {
                                     ),
                                   ),
                               blendMode: BlendMode.srcIn,
-                              child: Icon(
+                              child: const Icon(
                                 FontAwesomeIcons.phone,
                                 size: cartIconSize,
                                 color: Colors.white,
@@ -786,8 +698,6 @@ class CartCard extends StatelessWidget {
                           ],
                         ),
                       ),
-
-                      // Right: customer name + user icon
                       Expanded(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
@@ -818,7 +728,7 @@ class CartCard extends StatelessWidget {
                                     ),
                                   ),
                               blendMode: BlendMode.srcIn,
-                              child: FaIcon(
+                              child: const FaIcon(
                                 FontAwesomeIcons.user,
                                 size: cartIconSize,
                                 color: Colors.white,
@@ -842,7 +752,6 @@ class CartCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
 
-            // ===== عنوان المنتجات (الأيقونة يمين والنص يسارها) =====
             Row(
               textDirection: TextDirection.rtl,
               children: [
@@ -852,7 +761,7 @@ class CartCard extends StatelessWidget {
                         Rect.fromLTWH(0, 0, rect.width, rect.height),
                       ),
                   blendMode: BlendMode.srcIn,
-                  child: FaIcon(
+                  child: const FaIcon(
                     FontAwesomeIcons.boxOpen,
                     size: cartIconSize,
                     color: Colors.white,
@@ -868,7 +777,6 @@ class CartCard extends StatelessWidget {
                   ),
                   textAlign: TextAlign.right,
                 ),
-                // show first product on same line if exists
                 if (cart.items.isNotEmpty) ...[
                   const SizedBox(width: 12),
                   Expanded(
@@ -892,8 +800,6 @@ class CartCard extends StatelessWidget {
 
             const SizedBox(height: 4),
 
-            // ===== قائمة المنتجات (نص فقط) =====
-            // start from second item because first is shown inline with title
             ...cart.items
                 .skip(1)
                 .map(
@@ -928,12 +834,8 @@ class CartCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            // ===== المجموع =====
-            // ===== المجموع: اللابل يمين، القيمة يسار + rsak.svg + أيقونة المجموع =====
-            // ===== المجموع: الأيقونة + اللابل يمين / القيمة + رمز العملة يسار =====
             Row(
               children: [
-                // يمين: أيقونة المجموع مع اللابل
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -960,10 +862,7 @@ class CartCard extends StatelessWidget {
                     ),
                   ],
                 ),
-
                 const Spacer(),
-
-                // يسار: القيمة + أيقونة العملة
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -977,10 +876,6 @@ class CartCard extends StatelessWidget {
                       textAlign: TextAlign.left,
                     ),
                     const SizedBox(width: 6),
-
-                    // استخدم أي واحد من الخيارين حسب تفضيلك:
-
-                    // (أ) الويدجت الحالي عندك:
                     Padding(
                       padding: const EdgeInsets.only(left: 12.0),
                       child: CurrencyIcon(
@@ -989,14 +884,6 @@ class CartCard extends StatelessWidget {
                         color: textColor,
                       ),
                     ),
-
-                    // (ب) أو مباشرة من المسار (لو استخدمت flutter_svg):
-                    // SvgPicture.asset(
-                    //   'assets/icons/rsak.svg',
-                    //   width: 16,
-                    //   height: 16,
-                    //   colorFilter: ColorFilter.mode(textColor, BlendMode.srcIn),
-                    // ),
                   ],
                 ),
               ],
@@ -1004,7 +891,6 @@ class CartCard extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // ===== الأزرار =====
             Row(
               children: [
                 Expanded(
@@ -1018,7 +904,7 @@ class CartCard extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _GradientButton(
-                    onPressed: onAccept,
+                    onPressed: onAccept, // stays visible; does nothing
                     gradient: DesignSystem.primaryGradient,
                     label: 'قبول الطلب',
                   ),
@@ -1032,7 +918,6 @@ class CartCard extends StatelessWidget {
   }
 }
 
-// ===== زر بتدرّج (قبول) =====
 class _GradientButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final LinearGradient gradient;
@@ -1051,7 +936,7 @@ class _GradientButton extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           gradient: gradient,
-          borderRadius: BorderRadius.circular(18), // 🔥 زر بزوايا أنعم
+          borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
               color: gradient.colors.last.withOpacity(0.22),
@@ -1061,13 +946,14 @@ class _GradientButton extends StatelessWidget {
           ],
         ),
         child: ElevatedButton(
-          onPressed: onPressed,
+          onPressed:
+              onPressed, // if null => disabled style; else tap with no-op
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
             elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18), // نفس نصف القطر
+              borderRadius: BorderRadius.circular(18),
             ),
           ),
           child: Text(
@@ -1084,7 +970,6 @@ class _GradientButton extends StatelessWidget {
   }
 }
 
-// ===== زر إطار متدرّج + تعبئة بلون الكارد (رفض) =====
 class _GradientOutlineFillButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final LinearGradient gradient;
@@ -1105,7 +990,7 @@ class _GradientOutlineFillButton extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           gradient: gradient,
-          borderRadius: BorderRadius.circular(18), // 🔥 زر بزوايا أنعم
+          borderRadius: BorderRadius.circular(18),
         ),
         padding: const EdgeInsets.all(2),
         child: Container(
@@ -1137,72 +1022,6 @@ class _GradientOutlineFillButton extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-// Reuse _OrderProgressRow from orders_screen or add local fallback
-class _OrderProgressRow extends StatelessWidget {
-  final int currentStep; // 1..4
-
-  const _OrderProgressRow({this.currentStep = 1});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final inactive = isDark ? Colors.white12 : Colors.black12;
-    final active = DesignSystem.primary;
-
-    Widget stepDot(bool filled) {
-      return Container(
-        width: 12,
-        height: 12,
-        decoration: BoxDecoration(
-          color: filled ? active : Colors.transparent,
-          border: Border.all(color: filled ? active : inactive, width: 2),
-          shape: BoxShape.circle,
-        ),
-      );
-    }
-
-    Widget stepLabel(String label) {
-      return Text(
-        label,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: isDark ? Colors.white70 : DesignSystem.textSecondary,
-        ),
-      );
-    }
-
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  stepLabel('مراجعة الطلب'),
-                  stepLabel('تحضير الطلب'),
-                  stepLabel('جاري التوصيل'),
-                  stepLabel('تم التوصيل'),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(4, (i) {
-                  final filled = (i + 1) <= currentStep;
-                  return stepDot(filled);
-                }),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }

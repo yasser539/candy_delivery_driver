@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../core/design_system/design_system.dart';
-import '../../core/services/auth_service.dart';
 import '../main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -58,45 +56,29 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Future<void> _login() async {
-    if (!_formKey.currentState!.validate()) return;
+    // Accept any input (including empty) and proceed to main screen.
+    if (!_formKey.currentState!.validate()) {
+      // allow bypass even if form validation fails
+    }
     setState(() => _isLoading = true);
 
-    try {
-      final authService = Provider.of<AuthService>(context, listen: false);
-      final rawPhone = _phoneController.text.trim();
-      await authService.signInByCaptainPhonePassword(
-        rawPhone,
-        _passwordController.text,
-      );
+    await Future.delayed(const Duration(milliseconds: 300));
 
-      if (mounted) {
-        setState(() => _isLoading = false);
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const MainScreen()),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('خطأ في تسجيل الدخول: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const MainScreen()),
+    );
   }
 
   String? _validatePhone(String? value) {
-    if (value == null || value.trim().isEmpty) return 'يرجى إدخال رقم الجوال';
+    // allow empty phone
     return null;
   }
 
   String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) return 'يرجى إدخال كلمة المرور';
-    if (value.length < 4) return 'كلمة المرور قصيرة جداً';
+    // allow empty password
     return null;
   }
 
