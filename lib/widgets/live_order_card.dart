@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../core/design_system/design_system.dart';
-import 'dart:math' as math;
 import 'order_timeline.dart';
 
 /// Public LiveOrderCard widget used across screens. Expects an `order` map with
@@ -29,6 +28,8 @@ class LiveOrderCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardColor = isDark ? const Color(0xFF2A2A2A) : Colors.white;
     final color = (order['statusColor'] as Color?) ?? scheme.primary;
+    // Cache primary gradient once to reuse
+    final primaryGradient = DesignSystem.getBrandGradient('primary');
     final id = order['id']?.toString() ?? '';
     final rawItems = order['items'];
     final List<String> items = [];
@@ -53,11 +54,53 @@ class LiveOrderCard extends StatelessWidget {
         }
       }
     }
-    final status = order['status']?.toString() ?? '';
+    // final status = order['status']?.toString() ?? '';
 
     // customer fields
     final customerName = order['customerName']?.toString() ?? '';
     final customerPhone = order['customerPhone']?.toString() ?? '';
+
+    // Helper to normalize and format to a Saudi local mobile like: 050 123 4567
+    String formatSaudiPhone(String input) {
+      final digits = input.replaceAll(RegExp(r'[^0-9+]'), '');
+      if (digits.isEmpty) return '050 123 4567';
+
+      // Remove leading '+' for processing, keep for detection
+      var d = digits.startsWith('+') ? digits.substring(1) : digits;
+
+      String local;
+      if (d.startsWith('00966')) {
+        final rest = d.substring(5);
+        local = rest.isNotEmpty ? '0$rest' : '0501234567';
+      } else if (d.startsWith('966')) {
+        final rest = d.substring(3);
+        local = rest.isNotEmpty ? '0$rest' : '0501234567';
+      } else if (d.length == 9 && d.startsWith('5')) {
+        local = '0$d';
+      } else if (d.length >= 10 && d.startsWith('05')) {
+        local = d.substring(0, 10);
+      } else {
+        // Fallbacks for partial/unknown inputs
+        if (d.length >= 9 && d.startsWith('5')) {
+          local = '0${d.substring(0, 9)}';
+        } else {
+          local = '0501234567';
+        }
+      }
+
+      // Ensure exactly 10 digits starting with 05
+      local = local.replaceAll(RegExp(r'[^0-9]'), '');
+      if (local.length != 10 || !local.startsWith('05')) {
+        local = '0501234567';
+      }
+
+      // Format as 050 123 4567
+      return '${local.substring(0, 3)} ${local.substring(3, 6)} ${local.substring(6)}';
+    }
+
+    final displayPhone = customerPhone.isNotEmpty
+        ? formatSaudiPhone(customerPhone)
+        : '050 123 4567';
 
     final cardShadows = isDark
         ? [
@@ -91,48 +134,90 @@ class LiveOrderCard extends StatelessWidget {
             children: [
               Row(
                 children: [
+                  // Right side (in RTL): customer name with gradient user icon
                   Expanded(
-                    child: Text(
-                      'طلب رقم: $id',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                    child: Row(
+                      children: [
+                        ShaderMask(
+                          shaderCallback: (rect) =>
+                              primaryGradient.createShader(
+                                Rect.fromLTWH(0, 0, rect.width, rect.height),
+                              ),
+                          blendMode: BlendMode.srcIn,
+                          child: const FaIcon(
+                            FontAwesomeIcons.user,
+                            size:
+                                24, // ensure the user icon is slightly bigger and fully filled by the gradient
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            customerName.isNotEmpty ? customerName : 'العميل',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w800),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  // status chip
+                  // Left side (in RTL): order number in rounded gradient container
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(12),
+                      gradient: primaryGradient,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: DesignSystem.getBrandShadow('light'),
                     ),
                     child: Text(
-                      status,
+                      'طلب رقم: $id',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: color,
+                        color: Colors.white,
                         fontWeight: FontWeight.w700,
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 32),
 
               // products row above timeline: label on the right, product title on the left
               if (items.isNotEmpty) ...[
                 Row(
                   textDirection: TextDirection.rtl,
                   children: [
-                    Text(
-                      'المنتجات',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
-                      ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      textDirection: TextDirection.rtl,
+                      children: [
+                        ShaderMask(
+                          shaderCallback: (rect) =>
+                              primaryGradient.createShader(
+                                Rect.fromLTWH(0, 0, rect.width, rect.height),
+                              ),
+                          blendMode: BlendMode.srcIn,
+                          child: const FaIcon(
+                            FontAwesomeIcons.box,
+                            size: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'المنتجات',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                              ),
+                        ),
+                      ],
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -148,8 +233,11 @@ class LiveOrderCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 34),
               ],
+
+              // use flexible space before timeline to push it further down without growing card height
+              const Spacer(),
 
               // timeline (use shared OrderTimeline widget)
               Builder(
@@ -159,91 +247,68 @@ class LiveOrderCard extends StatelessWidget {
                   return OrderTimeline(step: timelineStep, accent: color);
                 },
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 3),
+              // Push the contact/actions row to the bottom of the card
+              const Spacer(),
 
-              // push the user row to the bottom of the card
-              const SizedBox.shrink(),
-
-              Expanded(child: Container()),
-
-              // user icon + name on the left, keep customer phone on the right
+              // phone icon + phone number only (remove duplicate name/phone)
               Row(
                 children: [
                   ShaderMask(
-                    shaderCallback: (rect) =>
-                        DesignSystem.getBrandGradient('primary').createShader(
-                          Rect.fromLTWH(0, 0, rect.width, rect.height),
-                        ),
+                    shaderCallback: (rect) => primaryGradient.createShader(
+                      Rect.fromLTWH(0, 0, rect.width, rect.height),
+                    ),
                     blendMode: BlendMode.srcIn,
-                    child: FaIcon(
-                      FontAwesomeIcons.user,
-                      size: 28,
+                    child: const FaIcon(
+                      FontAwesomeIcons.phone,
+                      size: 20,
                       color: Colors.white,
                     ),
                   ),
                   const SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        customerName.isNotEmpty ? customerName : 'العميل',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      customerPhone.isNotEmpty ? customerPhone : '',
+                      displayPhone,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 10),
                   SizedBox(
-                    width: 56,
-                    height: 30,
+                    width: 72,
+                    height: 36,
                     child: Container(
                       decoration: BoxDecoration(
-                        gradient: DesignSystem.getBrandGradient('primary'),
+                        gradient: DesignSystem.getBrandGradient('success'),
                         borderRadius: BorderRadius.circular(10),
+                        boxShadow: DesignSystem.getBrandShadow('medium'),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(1.5),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: cardColor,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () => onCallDriver?.call(id),
-                              borderRadius: BorderRadius.circular(8),
-                              child: Center(
-                                child: Icon(
-                                  FontAwesomeIcons.phone,
-                                  size: 14,
-                                  color: isDark ? Colors.white : Colors.black,
-                                ),
-                              ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => onCallDriver?.call(id),
+                          borderRadius: BorderRadius.circular(10),
+                          child: const Center(
+                            child: FaIcon(
+                              FontAwesomeIcons.phone,
+                              size: 16,
+                              color: Colors.white,
                             ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 10),
                   SizedBox(
                     width: 72,
-                    height: 30,
+                    height: 36,
                     child: Container(
                       decoration: BoxDecoration(
-                        gradient: DesignSystem.getBrandGradient('primary'),
+                        gradient: primaryGradient,
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: DesignSystem.getBrandShadow('medium'),
                       ),
@@ -276,213 +341,4 @@ class LiveOrderCard extends StatelessWidget {
   }
 }
 
-// The timeline classes below are adapted from the MyOrders implementation.
-class _OrderTimeline extends StatelessWidget {
-  const _OrderTimeline({required this.step, required this.accent});
-  final int step;
-  final Color accent;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    const labels = [
-      'مراجعة\nالطلب',
-      'تحضير\nالطلب',
-      'جاري\nالتوصيل',
-      'تم\nالتوصيل',
-    ];
-    const double dotSize = 18.0;
-    const double stroke = 1.6;
-
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final width = constraints.maxWidth;
-          const double horizontalPadding = 30.0;
-          final usable = width - dotSize - (horizontalPadding * 2);
-          final segment = usable / 3.0;
-          final centers = List.generate(
-            4,
-            (i) => Offset(
-              horizontalPadding + (dotSize / 2) + (segment * i),
-              dotSize / 2,
-            ),
-          );
-
-          return Column(
-            children: [
-              SizedBox(
-                height: dotSize,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    CustomPaint(
-                      size: Size(width, dotSize),
-                      painter: _ConnectorPainter(
-                        step: step,
-                        centers: centers,
-                        accent: accent,
-                        inactive: scheme.outline.withOpacity(0.3),
-                        strokeWidth: stroke,
-                        dotRadius: dotSize / 2,
-                        shorten: 14.0,
-                        underlap: 6.0,
-                      ),
-                    ),
-                    for (int i = 0; i < 4; i++)
-                      Positioned(
-                        left: centers[i].dx - (dotSize / 2),
-                        top: 0,
-                        width: dotSize,
-                        height: dotSize,
-                        child: ShaderMask(
-                          shaderCallback: (bounds) =>
-                              DesignSystem.getBrandGradient(
-                                'primary',
-                              ).createShader(bounds),
-                          blendMode: BlendMode.srcIn,
-                          child: _DotStep(
-                            filled: (3 - i) <= step,
-                            color: Colors.white,
-                            size: dotSize,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 6),
-              SizedBox(
-                width: width,
-                height: 56,
-                child: Stack(
-                  children: List.generate(4, (i) {
-                    final labelIndex = 3 - i;
-                    const double labelWidth = 84.0;
-                    var left = centers[i].dx - (labelWidth / 2);
-                    left = left.clamp(0.0, width - labelWidth);
-                    return Positioned(
-                      left: left,
-                      top: 0,
-                      width: labelWidth,
-                      child: Center(
-                        child: Text(
-                          labels[labelIndex],
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          softWrap: true,
-                          overflow: TextOverflow.visible,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                fontSize: 10,
-                                color: scheme.onSurface.withOpacity(0.72),
-                                height: 1.05,
-                              ),
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _ConnectorPainter extends CustomPainter {
-  _ConnectorPainter({
-    required this.step,
-    required this.centers,
-    required this.accent,
-    required this.inactive,
-    required this.strokeWidth,
-    this.dotRadius = 0,
-    this.shorten = 8.0,
-    this.underlap = 2.0,
-  });
-  final int step;
-  final List<Offset> centers;
-  final Color accent;
-  final Color inactive;
-  final double strokeWidth;
-  final double dotRadius;
-  final double shorten;
-  final double underlap;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paintActive = Paint()
-      ..strokeWidth = strokeWidth
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..shader = DesignSystem.getBrandGradient(
-        'primary',
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
-    final paintInactive = Paint()
-      ..color = inactive
-      ..strokeWidth = strokeWidth
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-    final edgeGap = dotRadius - (strokeWidth / 2);
-    final edgeWithUnderlap = (edgeGap - underlap).clamp(0.0, edgeGap);
-
-    for (int i = 0; i < 3; i++) {
-      final from = centers[i];
-      final to = centers[i + 1];
-      final angle = (to - from).direction;
-      var p1 =
-          from +
-          Offset(
-            math.cos(angle) * edgeWithUnderlap,
-            math.sin(angle) * edgeWithUnderlap,
-          );
-      var p2 =
-          to -
-          Offset(
-            math.cos(angle) * edgeWithUnderlap,
-            math.sin(angle) * edgeWithUnderlap,
-          );
-      final halfShorten = shorten / 2;
-      final midShift = Offset(
-        math.cos(angle) * halfShorten,
-        math.sin(angle) * halfShorten,
-      );
-      p1 = p1 + midShift;
-      p2 = p2 - midShift;
-      final isActive = i >= (3 - step);
-      canvas.drawLine(p1, p2, isActive ? paintActive : paintInactive);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _ConnectorPainter old) =>
-      old.step != step ||
-      old.accent != accent ||
-      old.strokeWidth != strokeWidth ||
-      old.shorten != shorten ||
-      old.underlap != underlap;
-}
-
-class _DotStep extends StatelessWidget {
-  const _DotStep({required this.filled, required this.color, this.size = 12});
-  final bool filled;
-  final Color color;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: filled ? color : Colors.transparent,
-        border: filled ? null : Border.all(color: color, width: 2),
-      ),
-    );
-  }
-}
+// Removed duplicate private timeline classes in favor of shared OrderTimeline to avoid duplication and reduce paint cost

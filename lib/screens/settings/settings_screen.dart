@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../core/design_system/design_system.dart';
+import '../../core/theme/theme_controller.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -18,137 +19,160 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     // Mock settings - no backend needed
-    _themeMode = 'system';
+  // initialize from controller
+  final current = ThemeController.instance.mode.value;
+  _themeMode = _stringFromMode(current);
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
 
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: isDark
-            ? DesignSystem.darkBackground
-            : DesignSystem.background,
+        backgroundColor:
+            isDark ? DesignSystem.darkBackground : Colors.white,
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ======= الهيدر الرئيسي =======
-                Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(bottom: 22),
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 22,
-                    horizontal: 16,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: DesignSystem.primaryGradient,
-                    borderRadius: BorderRadius.circular(22),
-                    boxShadow: [
-                      BoxShadow(
-                        color: DesignSystem.primaryGradient.colors.first
-                            .withOpacity(0.11),
-                        blurRadius: 15,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.16),
-                          shape: BoxShape.circle,
-                        ),
-                        child: FaIcon(
-                          FontAwesomeIcons.gear,
-                          color: Colors.white,
-                          size: 26,
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Text(
-                        'الإعدادات',
-                        style: DesignSystem.titleLarge.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+                // Header (simple title, no icon, no gradient container)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Text(
+                    'الإعدادات',
+                    style: DesignSystem.headlineLarge.copyWith(
+                      color: isDark
+                          ? DesignSystem.textInverse
+                          : DesignSystem.textPrimary,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
 
-                // ======= إعدادات المظهر =======
-                _buildSettingsCard(
-                  title: 'المظهر',
-                  isDark: isDark,
-                  child: Column(
-                    children: [
-                      _buildThemeChips(isDark),
-                      SwitchListTile.adaptive(
-                        value: false, // Mock dark mode setting
-                        onChanged: (v) async {
-                          // Mock dark mode change - no backend needed
-                          setState(() {
-                            _themeMode = v ? 'dark' : 'light';
-                          });
-                        },
-                        title: Text(
-                          'الوضع الداكن',
-                          style: DesignSystem.bodyMedium.copyWith(
-                            color: isDark
-                                ? DesignSystem.textInverse
-                                : DesignSystem.textPrimary,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        secondary: FaIcon(
-                          FontAwesomeIcons.moon,
-                          color: DesignSystem.primary,
-                        ),
-                        activeColor: DesignSystem.primary,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                        ),
-                      ),
-                    ],
+                // Appearance section (plain, no card)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
+                    'المظهر',
+                    style: DesignSystem.titleLarge.copyWith(
+                      color: isDark
+                          ? DesignSystem.textInverse
+                          : DesignSystem.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                _buildThemeChips(isDark),
+                SwitchListTile.adaptive(
+                  value: _themeMode == 'dark',
+                  onChanged: (v) async {
+                    final mode = v ? ThemeMode.dark : ThemeMode.light;
+                    ThemeController.instance.setMode(mode);
+                    setState(() {
+                      _themeMode = v ? 'dark' : 'light';
+                    });
+                  },
+                  title: Text(
+                    'الوضع الداكن',
+                    style: DesignSystem.bodyMedium.copyWith(
+                      color: scheme.onSurface,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  secondary: FaIcon(
+                    FontAwesomeIcons.moon,
+                    color: scheme.primary,
+                    size: 18,
+                  ),
+                  activeColor: scheme.primary,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
                   ),
                 ),
 
                 const SizedBox(height: 18),
 
-                // ======= إعدادات اللغة =======
-                _buildSettingsCard(
-                  title: 'اللغة',
-                  isDark: isDark,
-                  child: _buildListTile(
+                // Language section (plain list tile without leading icon)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
                     'اللغة',
-                    FontAwesomeIcons.language,
-                    _selectedLanguage,
-                    () => _showLanguageDialog(context),
-                    isDark,
+                    style: DesignSystem.titleLarge.copyWith(
+                      color: isDark
+                          ? DesignSystem.textInverse
+                          : DesignSystem.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
+                ),
+                ListTile(
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                  title: Text(
+                    'اللغة',
+                    style: DesignSystem.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color:
+                          isDark ? DesignSystem.textInverse : DesignSystem.textPrimary,
+                    ),
+                  ),
+                  subtitle: Text(
+                    _selectedLanguage,
+                    style: DesignSystem.bodySmall.copyWith(
+                      color: DesignSystem.textSecondary,
+                    ),
+                  ),
+                  trailing: FaIcon(
+                    FontAwesomeIcons.chevronLeft,
+                    color: DesignSystem.textSecondary,
+                    size: 18,
+                  ),
+                  onTap: () => _showLanguageDialog(context),
                 ),
 
                 const SizedBox(height: 18),
 
-                // ======= إعدادات الحساب =======
-                _buildSettingsCard(
-                  title: 'الحساب',
-                  isDark: isDark,
-                  child: _buildListTile(
-                    'تسجيل الخروج',
-                    FontAwesomeIcons.arrowRightFromBracket,
-                    'تسجيل الخروج من التطبيق',
-                    () => _showLogoutDialog(context),
-                    isDark,
-                    color: DesignSystem.error,
+                // Account section (plain list tile without leading icon)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
+                    'الحساب',
+                    style: DesignSystem.titleLarge.copyWith(
+                      color: isDark
+                          ? DesignSystem.textInverse
+                          : DesignSystem.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
+                ),
+                ListTile(
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                  title: Text(
+                    'تسجيل الخروج',
+                    style: DesignSystem.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: DesignSystem.error,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'تسجيل الخروج من التطبيق',
+                    style: DesignSystem.bodySmall.copyWith(
+                      color: DesignSystem.textSecondary,
+                    ),
+                  ),
+                  trailing: FaIcon(
+                    FontAwesomeIcons.chevronLeft,
+                    color: DesignSystem.textSecondary,
+                    size: 18,
+                  ),
+                  onTap: () => _showLogoutDialog(context),
                 ),
 
                 const SizedBox(height: 18),
@@ -161,53 +185,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
-
-  // ======= بطاقة إعدادات مع عنوان =======
-  Widget _buildSettingsCard({
-    required String title,
-    required Widget child,
-    bool isDark = false,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: isDark ? DesignSystem.darkSurface : DesignSystem.surface,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
-            blurRadius: 9,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(
-              top: 14,
-              right: 16,
-              left: 16,
-              bottom: 4,
-            ),
-            child: Text(
-              title,
-              style: DesignSystem.titleMedium.copyWith(
-                color: isDark
-                    ? DesignSystem.textInverse
-                    : DesignSystem.textPrimary,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          child,
-        ],
-      ),
-    );
-  }
-
-  // (أُزيلت الدالة القديمة الخاصة بالسويتش لأنها لم تعد مستخدمة)
 
   // ======= اختيار المظهر (Chips) =======
   Widget _buildThemeChips(bool isDark) {
@@ -259,10 +236,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _setThemeMode(String mode) async {
-    // Mock theme mode change - no backend needed
-    setState(() {
-      _themeMode = mode;
-    });
+    // apply to controller and update UI
+    switch (mode) {
+      case 'system':
+        ThemeController.instance.setMode(ThemeMode.system);
+        break;
+      case 'dark':
+        ThemeController.instance.setMode(ThemeMode.dark);
+        break;
+      default:
+        ThemeController.instance.setMode(ThemeMode.light);
+        break;
+    }
+    if (mounted) {
+      setState(() {
+        _themeMode = mode;
+      });
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -278,54 +268,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ======= عنصر القائمة =======
-  Widget _buildListTile(
-    String title,
-    IconData icon,
-    String subtitle,
-    VoidCallback? onTap,
-    bool isDark, {
-    Color? color,
-  }) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-      leading: Container(
-        padding: const EdgeInsets.all(9),
-        decoration: BoxDecoration(
-          color: (color ?? DesignSystem.primary).withOpacity(0.13),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: FaIcon(icon, color: color ?? DesignSystem.primary, size: 22),
-      ),
-      title: Text(
-        title,
-        style: DesignSystem.bodyMedium.copyWith(
-          fontWeight: FontWeight.w700,
-          color: color ?? DesignSystem.textPrimary,
-        ),
-      ),
-      subtitle: subtitle.isNotEmpty
-          ? Text(
-              subtitle,
-              style: DesignSystem.bodySmall.copyWith(
-                color: DesignSystem.textSecondary,
-              ),
-            )
-          : null,
-      trailing: onTap != null
-          ? FaIcon(
-              FontAwesomeIcons.chevronLeft,
-              color: DesignSystem.textSecondary,
-              size: 18,
-            )
-          : null,
-      onTap: onTap,
-    );
+  String _stringFromMode(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.dark:
+        return 'dark';
+      case ThemeMode.light:
+        return 'light';
+      case ThemeMode.system:
+        return 'system';
+    }
+    // Fallback (shouldn't reach here)
+    // ignore: dead_code
+    return 'system';
   }
 
   // ========================
-
-  // (أُزيلت دالة التبديل المباشر لأنها استبدلت بخيار وضع النظام/فاتح/داكن)
 
   void _showLanguageDialog(BuildContext context) {
     showDialog(

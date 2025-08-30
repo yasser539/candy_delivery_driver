@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../core/design_system/design_system.dart';
 import 'dart:ui';
 
@@ -38,7 +39,7 @@ class _CandyNavigationBarState extends State<CandyNavigationBar>
 
   @override
   Widget build(BuildContext context) {
-    final isDark = MediaQuery.of(context).platformBrightness == Brightness.dark;
+  final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AnimatedBuilder(
       animation: _slideAnimation,
@@ -133,32 +134,32 @@ class _CandyNavigationBarState extends State<CandyNavigationBar>
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           _buildModernNavItem(
-                            icon: Icons.person,
+                            icon: FontAwesomeIcons.user,
                             label: 'حسابي',
                             isActive: false,
                             onTap: () => widget.onNavTap?.call(0),
                           ),
                           _buildModernNavItem(
-                            icon: Icons.map,
+                            icon: FontAwesomeIcons.mapLocationDot,
                             label: 'الخريطة',
                             isActive: false,
                             onTap: () => widget.onNavTap?.call(1),
                           ),
                           _buildModernNavItem(
-                            icon: Icons.home,
+                            icon: FontAwesomeIcons.house,
                             label: 'الرئيسية',
                             isActive: true,
                             onTap: () => widget.onNavTap?.call(2),
                             isHome: true,
                           ),
                           _buildModernNavItem(
-                            icon: Icons.local_shipping,
+                            icon: FontAwesomeIcons.truck,
                             label: 'الطلبات',
                             isActive: false,
                             onTap: () => widget.onNavTap?.call(3),
                           ),
                           _buildModernNavItem(
-                            icon: Icons.settings,
+                            icon: FontAwesomeIcons.gear,
                             label: 'الإعدادات',
                             isActive: false,
                             onTap: () => widget.onNavTap?.call(4),
@@ -184,7 +185,10 @@ class _CandyNavigationBarState extends State<CandyNavigationBar>
     int? badge,
     bool isHome = false,
   }) {
-    final isDark = MediaQuery.of(context).platformBrightness == Brightness.dark;
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final Color inactiveColor = isDark
+      ? DesignSystem.textInverse
+      : Colors.grey.shade600;
     return RepaintBoundary(
       child: GestureDetector(
         onTap: onTap,
@@ -209,8 +213,8 @@ class _CandyNavigationBarState extends State<CandyNavigationBar>
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                  isHome
-                      ? Container(
+          isHome
+            ? Container(
                           width: 56,
                           height: 48,
                           decoration: BoxDecoration(
@@ -222,29 +226,29 @@ class _CandyNavigationBarState extends State<CandyNavigationBar>
                               scale: isActive ? 1.05 : 1.0,
                               duration: const Duration(milliseconds: 200),
                               curve: Curves.easeOutCubic,
-                              child: Icon(icon, color: Colors.white, size: 20),
+                child: Icon(icon, color: Colors.white, size: 20),
                             ),
                           ),
                         )
-                      : isActive
-                          ? AnimatedScale(
-                              scale: isActive ? 1.05 : 1.0,
-                              duration: const Duration(milliseconds: 200),
-                              curve: Curves.easeOutCubic,
-                              child: ShaderMask(
-                                shaderCallback: (Rect bounds) {
-                                  return DesignSystem.primaryGradient
-                                      .createShader(bounds);
-                                },
-                                blendMode: BlendMode.srcIn,
-                                child: Icon(icon, size: 20),
-                              ),
-                            )
+            : isActive
+              ? AnimatedScale(
+                scale: isActive ? 1.05 : 1.0,
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOutCubic,
+                child: isDark
+                  ? Icon(icon, color: Colors.white, size: 20)
+                  : ShaderMask(
+                    shaderCallback: (Rect bounds) {
+                    return DesignSystem.primaryGradient
+                      .createShader(bounds);
+                    },
+                    blendMode: BlendMode.srcIn,
+                    child: Icon(icon, size: 20),
+                  ),
+              )
                           : Icon(
                               icon,
-                              color: isDark
-                                  ? DesignSystem.textInverse
-                                  : DesignSystem.textPrimary,
+                              color: inactiveColor,
                               size: 20,
                             ),
                   if (badge != null && badge > 0)
@@ -281,12 +285,8 @@ class _CandyNavigationBarState extends State<CandyNavigationBar>
               Text(
                 label,
                 style: TextStyle(
-                  color: isActive
-                      ? DesignSystem.primary
-                      : isDark
-                          ? DesignSystem.textInverse
-                          : DesignSystem.textPrimary,
-                  fontSize: 12,
+                  color: isActive ? DesignSystem.primary : inactiveColor,
+                  fontSize: 10,
                   fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                 ),
               ),

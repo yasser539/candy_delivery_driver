@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'screens/main_screen.dart';
 import 'screens/auth/login_screen.dart';
+import 'core/theme/app_theme.dart';
+import 'core/theme/theme_controller.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,15 +12,19 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Candy Water Delivery',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.purple,
-        useMaterial3: true,
-        fontFamily: 'Rubik',
-      ),
-      home: const LoginScreen(),
+    final language = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: ThemeController.instance.mode,
+      builder: (context, mode, _) {
+        return MaterialApp(
+          title: 'Candy Water Delivery',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightFor(language),
+          darkTheme: AppTheme.darkFor(language),
+          themeMode: mode,
+          home: const LoginScreen(),
+        );
+      },
     );
   }
 }

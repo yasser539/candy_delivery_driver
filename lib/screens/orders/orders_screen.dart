@@ -1,7 +1,5 @@
 // lib/screens/orders/orders_screen.dart
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
 import '../../core/design_system/design_system.dart';
 import '../../widgets/live_order_card.dart';
 
@@ -15,10 +13,8 @@ class OrdersScreen extends StatefulWidget {
 
 class _OrdersScreenState extends State<OrdersScreen>
     with AutomaticKeepAliveClientMixin {
-  bool _isRefreshing = false;
-
   @override
-  bool get wantKeepAlive => false; // Disable keep alive for better performance
+  bool get wantKeepAlive => true; // Keep alive to avoid rebuild jank when switching tabs
 
   // Single order for maximum performance while keeping your exact design
   static final List<Map<String, dynamic>> _mockOrders = [
@@ -34,24 +30,25 @@ class _OrdersScreenState extends State<OrdersScreen>
   ];
 
   Future<void> _refresh() async {
-    setState(() => _isRefreshing = true);
     await Future.delayed(const Duration(milliseconds: 150)); // Minimal delay
-    if (!mounted) return;
-    setState(() => _isRefreshing = false);
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  // final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: isDark
-            ? DesignSystem.darkBackground
-            : DesignSystem.background,
-        appBar: AppBar(title: const Text('الطلبات'), centerTitle: true),
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: false, // align to the start (right in RTL)
+          titleSpacing: 16,
+          title: const Text('الطلبات', textAlign: TextAlign.right),
+        ),
         body: SafeArea(
           child: RefreshIndicator(
             onRefresh: _refresh,
@@ -59,9 +56,13 @@ class _OrdersScreenState extends State<OrdersScreen>
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: _mockOrders.length,
-              addAutomaticKeepAlives: false,
-              addRepaintBoundaries: false,
-              cacheExtent: 500,
+              // Let ListView add keep-alives & repaint boundaries for smoother scrolling
+              addAutomaticKeepAlives: true,
+              addRepaintBoundaries: true,
+              prototypeItem: const Padding(
+                padding: EdgeInsets.only(bottom: 12),
+                child: SizedBox(height: 260),
+              ),
               physics: const ClampingScrollPhysics(),
               itemBuilder: (context, index) {
                 final order = _mockOrders[index];

@@ -13,7 +13,7 @@ class OrderTimeline extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     const labels = [
       'مراجعة\nالطلب',
-      'تحضير\nالطلب',
+      'اختيار\nالسائق',
       'جاري\nالتوصيل',
       'تم\nالتوصيل',
     ];
@@ -21,100 +21,102 @@ class OrderTimeline extends StatelessWidget {
     const double dotSize = 18.0;
     const double stroke = 1.6;
 
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final width = constraints.maxWidth;
-          const double horizontalPadding = 30.0;
-          final usable = width - dotSize - (horizontalPadding * 2);
-          final segment = usable / 3.0;
+    return RepaintBoundary(
+      child: Directionality(
+        textDirection: TextDirection.rtl,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth;
+            const double horizontalPadding = 30.0;
+            final usable = width - dotSize - (horizontalPadding * 2);
+            final segment = usable / 3.0;
 
-          final centers = List.generate(4, (i) {
-            return Offset(
-              horizontalPadding + (dotSize / 2) + (segment * i),
-              dotSize / 2,
-            );
-          });
+            final centers = List.generate(4, (i) {
+              return Offset(
+                horizontalPadding + (dotSize / 2) + (segment * i),
+                dotSize / 2,
+              );
+            });
 
-          return Column(
-            children: [
-              SizedBox(
-                height: dotSize,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    CustomPaint(
-                      size: Size(width, dotSize),
-                      painter: _ConnectorPainter(
-                        step: step,
-                        centers: centers,
-                        accent: accent,
-                        inactive: scheme.outline.withOpacity(0.3),
-                        strokeWidth: stroke,
-                        dotRadius: dotSize / 2,
-                        shorten: 14.0,
-                        underlap: 6.0,
+            return Column(
+              children: [
+                SizedBox(
+                  height: dotSize,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      CustomPaint(
+                        size: Size(width, dotSize),
+                        painter: _ConnectorPainter(
+                          step: step,
+                          centers: centers,
+                          accent: accent,
+                          inactive: scheme.outline.withOpacity(0.3),
+                          strokeWidth: stroke,
+                          dotRadius: dotSize / 2,
+                          shorten: 14.0,
+                          underlap: 6.0,
+                        ),
                       ),
-                    ),
-                    for (int i = 0; i < 4; i++)
-                      Positioned(
-                        left: centers[i].dx - (dotSize / 2),
-                        top: 0,
-                        width: dotSize,
-                        height: dotSize,
-                        child: ShaderMask(
-                          shaderCallback: (bounds) =>
-                              DesignSystem.getBrandGradient(
-                                'primary',
-                              ).createShader(bounds),
-                          blendMode: BlendMode.srcIn,
-                          child: _DotStep(
-                            filled: (3 - i) <= step,
-                            color: Colors.white,
-                            size: dotSize,
+                      for (int i = 0; i < 4; i++)
+                        Positioned(
+                          left: centers[i].dx - (dotSize / 2),
+                          top: 0,
+                          width: dotSize,
+                          height: dotSize,
+                          child: ShaderMask(
+                            shaderCallback: (bounds) =>
+                                DesignSystem.getBrandGradient(
+                                  'primary',
+                                ).createShader(bounds),
+                            blendMode: BlendMode.srcIn,
+                            child: _DotStep(
+                              filled: (3 - i) <= step,
+                              color: Colors.white,
+                              size: dotSize,
+                            ),
                           ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 6),
-              SizedBox(
-                width: width,
-                height: 56,
-                child: Stack(
-                  children: List.generate(4, (i) {
-                    final labelIndex = 3 - i;
-                    const double labelWidth = 84.0;
-                    var left = centers[i].dx - (labelWidth / 2);
-                    left = left.clamp(0.0, width - labelWidth);
-                    return Positioned(
-                      left: left,
-                      top: 0,
-                      width: labelWidth,
-                      child: Center(
-                        child: Text(
-                          labels[labelIndex],
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          softWrap: true,
-                          overflow: TextOverflow.visible,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                fontSize: 10,
-                                color: scheme.onSurface.withOpacity(0.72),
-                                height: 1.05,
-                              ),
+                const SizedBox(height: 6),
+                SizedBox(
+                  width: width,
+                  height: 56,
+                  child: Stack(
+                    children: List.generate(4, (i) {
+                      final labelIndex = 3 - i;
+                      const double labelWidth = 84.0;
+                      var left = centers[i].dx - (labelWidth / 2);
+                      left = left.clamp(0.0, width - labelWidth);
+                      return Positioned(
+                        left: left,
+                        top: 0,
+                        width: labelWidth,
+                        child: Center(
+                          child: Text(
+                            labels[labelIndex],
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            softWrap: true,
+                            overflow: TextOverflow.visible,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  fontSize: 10,
+                                  color: scheme.onSurface.withOpacity(0.72),
+                                  height: 1.05,
+                                ),
+                          ),
                         ),
-                      ),
-                    );
-                  }),
+                      );
+                    }),
+                  ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -215,9 +217,10 @@ class _DotStep extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: filled ? color : Colors.transparent,
-        border: filled ? null : Border.all(color: color, width: 2),
+        border: filled
+            ? null
+            : Border.all(color: color.withOpacity(0.8), width: 2),
       ),
     );
   }
 }
-
