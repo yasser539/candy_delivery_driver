@@ -121,16 +121,17 @@ class LiveOrderCard extends StatelessWidget {
     return Center(
       child: Container(
         width: double.infinity,
-        constraints: const BoxConstraints(minHeight: 240),
+  constraints: const BoxConstraints(minHeight: 240),
         decoration: BoxDecoration(
           color: cardColor,
           borderRadius: BorderRadius.circular(24),
           boxShadow: cardShadows,
         ),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
+          padding: const EdgeInsets.fromLTRB(16, 18, 16, 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Row(
                 children: [
@@ -185,7 +186,7 @@ class LiveOrderCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
 
               // products row above timeline: label on the right, product title on the left
               if (items.isNotEmpty) ...[
@@ -233,11 +234,11 @@ class LiveOrderCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 34),
+                const SizedBox(height: 22),
               ],
 
-              // use flexible space before timeline to push it further down without growing card height
-              const Spacer(),
+              // Fixed gap before timeline to avoid overflow in tight layouts
+              const SizedBox(height: 8),
 
               // timeline (use shared OrderTimeline widget)
               Builder(
@@ -248,8 +249,8 @@ class LiveOrderCard extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 3),
-              // Push the contact/actions row to the bottom of the card
-              const Spacer(),
+              // Fixed gap after timeline to prevent flex overflow
+              const SizedBox(height: 8),
 
               // phone icon + phone number only (remove duplicate name/phone)
               Row(
@@ -272,29 +273,29 @@ class LiveOrderCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
                   SizedBox(
-                    width: 72,
-                    height: 36,
+                    width: 84,
+                    height: 44,
                     child: Container(
                       decoration: BoxDecoration(
                         gradient: DesignSystem.getBrandGradient('success'),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(12),
                         boxShadow: DesignSystem.getBrandShadow('medium'),
                       ),
                       child: Material(
                         color: Colors.transparent,
                         child: InkWell(
                           onTap: () => onCallDriver?.call(id),
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(12),
                           child: const Center(
                             child: FaIcon(
                               FontAwesomeIcons.phone,
-                              size: 16,
+                              size: 18,
                               color: Colors.white,
                             ),
                           ),
@@ -304,26 +305,26 @@ class LiveOrderCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 10),
                   SizedBox(
-                    width: 72,
-                    height: 36,
+                    width: 76,
+                    height: 44,
                     child: Container(
                       decoration: BoxDecoration(
                         gradient: primaryGradient,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(12),
                         boxShadow: DesignSystem.getBrandShadow('medium'),
                       ),
                       child: Material(
                         color: Colors.transparent,
                         child: InkWell(
                           onTap: () => onTrack?.call(id),
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(12),
                           child: const Center(
                             child: Text(
                               'تتبُّع',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w700,
-                                fontSize: 12,
+                                fontSize: 14,
                               ),
                             ),
                           ),

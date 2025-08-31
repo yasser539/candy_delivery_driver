@@ -20,12 +20,13 @@ class StatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+      color: isDark ? DesignSystem.darkSurface : Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -53,10 +54,10 @@ class StatusCard extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                Text(
+        Text(
                   count.toString(),
                   style: DesignSystem.headlineSmall.copyWith(
-                    color: DesignSystem.textPrimary,
+          color: isDark ? Colors.white : DesignSystem.textPrimary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -66,7 +67,7 @@ class StatusCard extends StatelessWidget {
             Text(
               title,
               style: DesignSystem.titleMedium.copyWith(
-                color: DesignSystem.textPrimary,
+        color: isDark ? Colors.white : DesignSystem.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -74,7 +75,7 @@ class StatusCard extends StatelessWidget {
             Text(
               _getSubtitle(),
               style: DesignSystem.bodySmall.copyWith(
-                color: DesignSystem.textSecondary,
+        color: isDark ? Colors.white : DesignSystem.textSecondary,
               ),
             ),
           ],

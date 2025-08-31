@@ -312,7 +312,7 @@ class OrderCard extends StatelessWidget {
                         FontAwesomeIcons.locationArrow,
                         size: 16,
                       ),
-                      label: const Text('خريطة'),
+                      label: const Text('تتبع'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: DesignSystem.primary,
                         foregroundColor: Colors.white,

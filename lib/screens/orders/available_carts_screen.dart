@@ -116,7 +116,9 @@ class _AvailableCartsScreenState extends State<AvailableCartsScreen> {
                     Text(
                       'الطلبات المتاحة: ',
                       style: DesignSystem.bodyMedium.copyWith(
-                        color: Colors.grey[700],
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.grey[700],
                       ),
                     ),
                     Text(
@@ -144,7 +146,9 @@ class _AvailableCartsScreenState extends State<AvailableCartsScreen> {
                             curve: Curves.easeInOut,
                             margin: const EdgeInsets.only(bottom: 10),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? DesignSystem.darkSurface
+                                  : Colors.white,
                               borderRadius: BorderRadius.circular(
                                 PlatformUIStandards.cardRadius,
                               ),
@@ -184,7 +188,7 @@ class _AvailableCartsScreenState extends State<AvailableCartsScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 32),
       alignment: Alignment.center,
-      child: Column(
+  child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
@@ -201,19 +205,31 @@ class _AvailableCartsScreenState extends State<AvailableCartsScreen> {
             ),
           ),
           const SizedBox(height: 22),
-          Text(
-            'لا توجد طلبات متاحة حالياً',
-            textAlign: TextAlign.center,
-            style: DesignSystem.headlineMedium.copyWith(
-              color: Colors.grey[800],
-              fontWeight: FontWeight.bold,
-            ),
+          Builder(
+            builder: (ctx) {
+              final isDark = Theme.of(ctx).brightness == Brightness.dark;
+              return Text(
+                'لا توجد طلبات متاحة حالياً',
+                textAlign: TextAlign.center,
+                style: DesignSystem.headlineMedium.copyWith(
+                  color: isDark ? Colors.white : Colors.grey[800],
+                  fontWeight: FontWeight.bold,
+                ),
+              );
+            },
           ),
           const SizedBox(height: 8),
-          Text(
-            'ستظهر الطلبات الجديدة هنا عند توفرها',
-            textAlign: TextAlign.center,
-            style: DesignSystem.bodyMedium.copyWith(color: Colors.grey[600]),
+          Builder(
+            builder: (ctx) {
+              final isDark = Theme.of(ctx).brightness == Brightness.dark;
+              return Text(
+                'ستظهر الطلبات الجديدة هنا عند توفرها',
+                textAlign: TextAlign.center,
+                style: DesignSystem.bodyMedium.copyWith(
+                  color: isDark ? Colors.white : Colors.grey[600],
+                ),
+              );
+            },
           ),
         ],
       ),

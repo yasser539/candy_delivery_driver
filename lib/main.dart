@@ -12,7 +12,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final language = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+    final language =
+        WidgetsBinding.instance.platformDispatcher.locale.languageCode;
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: ThemeController.instance.mode,
       builder: (context, mode, _) {

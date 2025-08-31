@@ -125,8 +125,8 @@ class DesignSystem {
   /// Dark Background - الخلفية المظلمة (pitch black)
   static const Color darkBackground = Color(0xFF000000);
 
-  /// Dark Text Primary - النص الأساسي المظلم
-  static const Color darkTextPrimary = Color(0xFFF7FAFC);
+  /// Dark Text Primary - النص الأساسي المظلم (pure white per requirement)
+  static const Color darkTextPrimary = Color(0xFFFFFFFF);
 
   /// Dark Text Secondary - النص الثانوي المظلم
   static const Color darkTextSecondary = Color(0xFFB8C2CC);

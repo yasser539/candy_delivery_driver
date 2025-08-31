@@ -12,29 +12,28 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   // legacy flag removed; rely on _themeMode and Theme.of(context)
-  String _selectedLanguage = 'العربية';
   String _themeMode = 'system'; // 'system' | 'light' | 'dark'
 
   @override
   void initState() {
     super.initState();
     // Mock settings - no backend needed
-  // initialize from controller
-  final current = ThemeController.instance.mode.value;
-  _themeMode = _stringFromMode(current);
+    // initialize from controller
+    final current = ThemeController.instance.mode.value;
+    _themeMode = _stringFromMode(current);
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
+  // final scheme = theme.colorScheme; // not needed after simplification
     final isDark = theme.brightness == Brightness.dark;
+  final dividerColor = isDark ? Colors.white12 : Colors.black12;
 
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor:
-            isDark ? DesignSystem.darkBackground : Colors.white,
+        backgroundColor: isDark ? DesignSystem.darkBackground : Colors.white,
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -55,129 +54,198 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
 
-                // Appearance section (plain, no card)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text(
-                    'المظهر',
-                    style: DesignSystem.titleLarge.copyWith(
-                      color: isDark
-                          ? DesignSystem.textInverse
-                          : DesignSystem.textPrimary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                _buildThemeChips(isDark),
-                SwitchListTile.adaptive(
-                  value: _themeMode == 'dark',
-                  onChanged: (v) async {
-                    final mode = v ? ThemeMode.dark : ThemeMode.light;
-                    ThemeController.instance.setMode(mode);
-                    setState(() {
-                      _themeMode = v ? 'dark' : 'light';
-                    });
-                  },
-                  title: Text(
-                    'الوضع الداكن',
-                    style: DesignSystem.bodyMedium.copyWith(
-                      color: scheme.onSurface,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  secondary: FaIcon(
-                    FontAwesomeIcons.moon,
-                    color: scheme.primary,
-                    size: 18,
-                  ),
-                  activeColor: scheme.primary,
+                // Appearance: only title row (no subtitles/labels)
+                ListTile(
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 12,
+                    vertical: 2,
                   ),
-                ),
-
-                const SizedBox(height: 18),
-
-                // Language section (plain list tile without leading icon)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text(
-                    'اللغة',
-                    style: DesignSystem.titleLarge.copyWith(
+                  leading: _coloredIcon(
+                    FontAwesomeIcons.circleHalfStroke,
+                    gradient: DesignSystem.accentGradient,
+                  ),
+                  title: Text(
+                    'وضع التطبيق',
+                    style: DesignSystem.bodySmall.copyWith(
+                      fontWeight: FontWeight.w700,
                       color: isDark
                           ? DesignSystem.textInverse
                           : DesignSystem.textPrimary,
-                      fontWeight: FontWeight.bold,
                     ),
                   ),
+                  // No trailing arrow; tap anywhere to open picker
+                  onTap: () => _showThemeModePicker(context),
                 ),
+
+                Divider(height: 14, thickness: 1, color: dividerColor),
+
+                // Notifications
                 ListTile(
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 2,
+                  ),
+                  leading: _coloredIcon(
+                    FontAwesomeIcons.bell,
+                    gradient: DesignSystem.warningGradient,
+                  ),
+                  title: Text(
+                    'الإشعارات',
+                    style: DesignSystem.bodySmall.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: isDark
+                          ? DesignSystem.textInverse
+                          : DesignSystem.textPrimary,
+                    ),
+                  ),
+                  onTap: () => _showComingSoon('الإشعارات'),
+                ),
+
+                Divider(height: 14, thickness: 1, color: dividerColor),
+
+                // Language: only title row
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 2,
+                  ),
+                  leading: _coloredIcon(
+                    FontAwesomeIcons.language,
+                    gradient: DesignSystem.secondaryGradient,
+                  ),
                   title: Text(
                     'اللغة',
-                    style: DesignSystem.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color:
-                          isDark ? DesignSystem.textInverse : DesignSystem.textPrimary,
-                    ),
-                  ),
-                  subtitle: Text(
-                    _selectedLanguage,
                     style: DesignSystem.bodySmall.copyWith(
-                      color: DesignSystem.textSecondary,
+                      fontWeight: FontWeight.w700,
+                      color: isDark
+                          ? DesignSystem.textInverse
+                          : DesignSystem.textPrimary,
                     ),
                   ),
-                  trailing: FaIcon(
-                    FontAwesomeIcons.chevronLeft,
-                    color: DesignSystem.textSecondary,
-                    size: 18,
-                  ),
+                  // No trailing arrow
                   onTap: () => _showLanguageDialog(context),
                 ),
 
-                const SizedBox(height: 18),
+                Divider(height: 14, thickness: 1, color: dividerColor),
 
-                // Account section (plain list tile without leading icon)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text(
-                    'الحساب',
-                    style: DesignSystem.titleLarge.copyWith(
+                // Removed Privacy & Security
+
+                // (Data Saver removed)
+
+                // (Clear cache removed)
+
+                // Help & Support
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 2,
+                  ),
+                  leading: _coloredIcon(
+                    FontAwesomeIcons.lifeRing,
+                    gradient: DesignSystem.secondaryGradient,
+                  ),
+                  title: Text(
+                    'المساعدة والدعم',
+                    style: DesignSystem.bodySmall.copyWith(
+                      fontWeight: FontWeight.w700,
                       color: isDark
                           ? DesignSystem.textInverse
                           : DesignSystem.textPrimary,
-                      fontWeight: FontWeight.bold,
                     ),
                   ),
+                  onTap: () => _showComingSoon('المساعدة والدعم'),
                 ),
+
+                Divider(height: 14, thickness: 1, color: dividerColor),
+
+                // (Rate app removed)
+
+                // Share app
                 ListTile(
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 2,
+                  ),
+                  leading: _coloredIcon(
+                    FontAwesomeIcons.shareNodes,
+                    gradient: DesignSystem.accentGradient,
+                  ),
+                  title: Text(
+                    'مشاركة التطبيق',
+                    style: DesignSystem.bodySmall.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: isDark
+                          ? DesignSystem.textInverse
+                          : DesignSystem.textPrimary,
+                    ),
+                  ),
+                  onTap: () => _showComingSoon('مشاركة التطبيق'),
+                ),
+
+                Divider(height: 14, thickness: 1, color: dividerColor),
+
+                // Removed Terms & Policies
+
+                // App version
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 2,
+                  ),
+                  leading: _coloredIcon(
+                    FontAwesomeIcons.circleInfo,
+                    gradient: DesignSystem.secondaryGradient,
+                  ),
+                  title: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'إصدار التطبيق',
+                        style: DesignSystem.bodySmall.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: isDark
+                              ? DesignSystem.textInverse
+                              : DesignSystem.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Directionality(
+                        textDirection: TextDirection.ltr,
+                        child: Text(
+                          '1.0.0+1',
+                          style: DesignSystem.bodySmall.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: isDark
+                                ? DesignSystem.textInverse
+                                : DesignSystem.textPrimary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                Divider(height: 14, thickness: 1, color: dividerColor),
+
+                // Account: Logout should be last
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 2,
+                  ),
+                  leading: const FaIcon(FontAwesomeIcons.rightFromBracket, color: Colors.red),
                   title: Text(
                     'تسجيل الخروج',
-                    style: DesignSystem.bodyMedium.copyWith(
+                    style: DesignSystem.bodySmall.copyWith(
                       fontWeight: FontWeight.w700,
                       color: DesignSystem.error,
                     ),
                   ),
-                  subtitle: Text(
-                    'تسجيل الخروج من التطبيق',
-                    style: DesignSystem.bodySmall.copyWith(
-                      color: DesignSystem.textSecondary,
-                    ),
-                  ),
-                  trailing: FaIcon(
-                    FontAwesomeIcons.chevronLeft,
-                    color: DesignSystem.textSecondary,
-                    size: 18,
-                  ),
+                  // No trailing arrow
                   onTap: () => _showLogoutDialog(context),
                 ),
 
-                const SizedBox(height: 18),
-
-                const SizedBox(height: 60),
+                const SizedBox(height: 56),
               ],
             ),
           ),
@@ -186,54 +254,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ======= اختيار المظهر (Chips) =======
-  Widget _buildThemeChips(bool isDark) {
-    final options = [
-      {
-        'label': 'النظام',
-        'value': 'system',
-        'icon': FontAwesomeIcons.mobileScreen,
-      },
-      {'label': 'فاتح', 'value': 'light', 'icon': FontAwesomeIcons.sun},
-      {'label': 'داكن', 'value': 'dark', 'icon': FontAwesomeIcons.moon},
-    ];
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: options.map((opt) {
-          final selected = _themeMode == opt['value'];
-          return ChoiceChip(
-            label: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                FaIcon(
-                  opt['icon'] as IconData,
-                  size: 14,
-                  color: selected ? Colors.white : DesignSystem.primary,
-                ),
-                const SizedBox(width: 6),
-                Text(opt['label'] as String),
-              ],
-            ),
-            selected: selected,
-            onSelected: (_) => _setThemeMode(opt['value'] as String),
-            selectedColor: DesignSystem.primary,
-            backgroundColor: DesignSystem.primary.withOpacity(0.08),
-            labelStyle: DesignSystem.labelMedium.copyWith(
-              color: selected ? Colors.white : DesignSystem.primary,
-              fontWeight: FontWeight.w700,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          );
-        }).toList(),
-      ),
-    );
-  }
+  // (removed chips UI in favor of a single mode picker)
 
   Future<void> _setThemeMode(String mode) async {
     // apply to controller and update UI
@@ -282,31 +303,115 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return 'system';
   }
 
+  // Render a FontAwesome icon with a gradient fill
+  Widget _coloredIcon(
+    IconData icon, {
+    Gradient? gradient,
+    double size = 20,
+  }) {
+    final g = gradient ?? DesignSystem.primaryGradient;
+    return ShaderMask(
+      shaderCallback: (Rect bounds) {
+        return g.createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height));
+      },
+      blendMode: BlendMode.srcIn,
+      child: FaIcon(icon, size: size),
+    );
+  }
+
   // ========================
+
+  // No labels or subtitles required per design simplification
+
+  void _showThemeModePicker(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: _coloredIcon(
+                    FontAwesomeIcons.mobileScreen,
+                    gradient: DesignSystem.accentGradient,
+                  ),
+                  title: const Text('حسب النظام'),
+                  onTap: () {
+                    _setThemeMode('system');
+                    Navigator.pop(ctx);
+                  },
+                  trailing: _themeMode == 'system'
+                      ? const FaIcon(FontAwesomeIcons.check)
+                      : null,
+                ),
+                ListTile(
+                  leading: _coloredIcon(
+                    FontAwesomeIcons.sun,
+                    gradient: DesignSystem.warningGradient,
+                  ),
+                  title: const Text('فاتح'),
+                  onTap: () {
+                    _setThemeMode('light');
+                    Navigator.pop(ctx);
+                  },
+                  trailing: _themeMode == 'light'
+                      ? const FaIcon(FontAwesomeIcons.check)
+                      : null,
+                ),
+                ListTile(
+                  leading: _coloredIcon(
+                    FontAwesomeIcons.moon,
+                    gradient: DesignSystem.primaryGradient,
+                  ),
+                  title: const Text('داكن'),
+                  onTap: () {
+                    _setThemeMode('dark');
+                    Navigator.pop(ctx);
+                  },
+                  trailing: _themeMode == 'dark'
+                      ? const FaIcon(FontAwesomeIcons.check)
+                      : null,
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   void _showLanguageDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: DesignSystem.surface,
-        title: Text(
-          'اختر اللغة',
-          style: TextStyle(
-            color: DesignSystem.textPrimary,
-            fontWeight: FontWeight.bold,
+      builder: (dialogContext) {
+        final isDark = Theme.of(dialogContext).brightness == Brightness.dark;
+        return AlertDialog(
+          backgroundColor: isDark ? DesignSystem.darkBackground : DesignSystem.surface,
+          title: Text(
+            'اختر اللغة',
+            style: TextStyle(
+              color: isDark ? Colors.white : DesignSystem.textPrimary,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
             ListTile(
               title: Text(
                 'العربية',
-                style: TextStyle(color: DesignSystem.textPrimary),
+                style: TextStyle(color: isDark ? Colors.white : DesignSystem.textPrimary),
               ),
               onTap: () {
                 if (!mounted) return;
-                setState(() => _selectedLanguage = 'العربية');
                 Navigator.pop(dialogContext);
                 if (!mounted) return;
                 ScaffoldMessenger.of(this.context).showSnackBar(
@@ -320,11 +425,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ListTile(
               title: Text(
                 'English',
-                style: TextStyle(color: DesignSystem.textPrimary),
+                style: TextStyle(color: isDark ? Colors.white : DesignSystem.textPrimary),
               ),
               onTap: () {
                 if (!mounted) return;
-                setState(() => _selectedLanguage = 'English');
                 Navigator.pop(dialogContext);
                 if (!mounted) return;
                 ScaffoldMessenger.of(this.context).showSnackBar(
@@ -336,37 +440,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
           ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: DesignSystem.surface,
-        title: Text(
-          'تسجيل الخروج',
-          style: TextStyle(
-            color: DesignSystem.textPrimary,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        content: Text(
-          'هل أنت متأكد من تسجيل الخروج؟',
-          style: TextStyle(color: DesignSystem.textPrimary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              'إلغاء',
-              style: TextStyle(color: DesignSystem.textSecondary),
+      builder: (dialogContext) {
+        final isDark = Theme.of(dialogContext).brightness == Brightness.dark;
+        return AlertDialog(
+          backgroundColor: isDark ? DesignSystem.darkBackground : DesignSystem.surface,
+          title: Text(
+            'تسجيل الخروج',
+            style: TextStyle(
+              color: isDark ? Colors.white : DesignSystem.textPrimary,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          ElevatedButton(
-            onPressed: () async {
+          content: Text(
+            'هل أنت متأكد من تسجيل الخروج؟',
+            style: TextStyle(color: isDark ? Colors.white : DesignSystem.textPrimary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(
+                'إلغاء',
+                style: TextStyle(color: isDark ? Colors.white70 : DesignSystem.textSecondary),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
               Navigator.pop(dialogContext);
               // Mock logout - no backend needed
               ScaffoldMessenger.of(this.context).showSnackBar(
@@ -375,10 +482,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   backgroundColor: DesignSystem.success,
                 ),
               );
-            },
-            child: const Text('تأكيد'),
-          ),
-        ],
+              },
+              child: const Text('تأكيد'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+extension _SettingsHelpers on _SettingsScreenState {
+  void _showComingSoon(String title) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$title: قريبًا'),
+        duration: const Duration(seconds: 2),
       ),
     );
   }

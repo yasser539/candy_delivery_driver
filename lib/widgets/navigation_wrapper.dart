@@ -17,7 +17,7 @@ class NavigationWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+  final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: isDarkMode
@@ -25,8 +25,15 @@ class NavigationWrapper extends StatelessWidget {
           : DesignSystem.background,
       body: Stack(
         children: [
-          // Main content
-          child,
+          // Main content with adaptive bottom padding to keep above nav bar
+          Builder(builder: (context) {
+            final bottomInset = MediaQuery.of(context).viewPadding.bottom;
+            const navHeight = 72.0; // estimated height incl. margin and blur
+            return Padding(
+              padding: EdgeInsets.only(bottom: bottomInset + navHeight),
+              child: child,
+            );
+          }),
 
           // Navigation bar at bottom
           Align(

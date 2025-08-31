@@ -19,8 +19,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<Cart> _availableCarts = [];
   bool _isOnline = true;
-  bool _isUpdatingStatus = false;
-  DateTime? _statusTimestamp;
+  // removed: _isUpdatingStatus, _statusTimestamp (unused outside demo)
   Position? _statusPosition;
   String? _statusError;
   int _monthlyDays = 0;
@@ -128,9 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: isDark
-            ? DesignSystem.darkBackground
-            : DesignSystem.background,
+        backgroundColor: isDark ? DesignSystem.darkBackground : Colors.white,
         body: SafeArea(
           child: RefreshIndicator(
             onRefresh: _refresh,
@@ -239,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           )
                           .toList(),
                     ),
-                  const SizedBox(height: 30),
+                  SizedBox(height: MediaQuery.of(context).viewPadding.bottom + 100),
                 ],
               ),
             ),
@@ -336,29 +333,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ====== حضور/انصراف وموقع ======
-  void _onOnlineToggled(bool value) async {
-    setState(() {
-      _isOnline = value;
-      _isUpdatingStatus = true;
-      _statusTimestamp = DateTime.now();
-      _statusError = null;
-    });
-
-    if (value) {
-      await _captureLocation();
-      // Mock check-in - no backend needed
-    } else {
-      // Mock check-out - no backend needed
-    }
-
-    if (mounted) {
-      setState(() => _isUpdatingStatus = false);
-    }
-  }
 
   Future<void> _captureStatusIfOnline() async {
     if (_isOnline) {
-      setState(() => _statusTimestamp = DateTime.now());
+      setState(() {});
       await _captureLocation();
     }
   }
@@ -406,7 +384,6 @@ class _StatusCardModern extends StatelessWidget {
   final String title;
   final int count;
   final IconData icon;
-  final Color? color;
   final LinearGradient? gradient;
   final bool outlined;
 
@@ -414,7 +391,6 @@ class _StatusCardModern extends StatelessWidget {
     required this.title,
     required this.count,
     required this.icon,
-    this.color,
     this.gradient,
     this.outlined = false,
   });
@@ -508,16 +484,14 @@ class _StatusCardModern extends StatelessWidget {
         gradient:
             gradient ??
             LinearGradient(
-              colors: [
-                (color ?? DesignSystem.primary),
-                (color ?? DesignSystem.primary),
-              ],
+              colors: [DesignSystem.primary, DesignSystem.primary],
             ),
         borderRadius: BorderRadius.circular(17),
         boxShadow: [
           BoxShadow(
-            color: (gradient?.colors.last ?? (color ?? DesignSystem.primary))
-                .withOpacity(0.18),
+            color: (gradient?.colors.last ?? DesignSystem.primary).withOpacity(
+              0.18,
+            ),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -783,7 +757,7 @@ class CartCard extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.only(left: 12.0),
                       child: Text(
-                        cart.items.first.productName ?? '',
+                        cart.items.first.productName,
                         style: TextStyle(
                           color: textColor,
                           fontWeight: FontWeight.w500,
@@ -811,7 +785,7 @@ class CartCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            item.productName ?? '',
+                            item.productName,
                             style: TextStyle(
                               fontSize: baseTextSize,
                               color: textColor,
@@ -894,10 +868,9 @@ class CartCard extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: _GradientOutlineFillButton(
+                  child: _GradientButton(
                     onPressed: onReject,
-                    gradient: DesignSystem.primaryGradient,
-                    cardColor: cardColor,
+                    gradient: DesignSystem.errorGradient,
                     label: 'رفض',
                   ),
                 ),
@@ -970,58 +943,4 @@ class _GradientButton extends StatelessWidget {
   }
 }
 
-class _GradientOutlineFillButton extends StatelessWidget {
-  final VoidCallback? onPressed;
-  final LinearGradient gradient;
-  final Color cardColor;
-  final String label;
-
-  const _GradientOutlineFillButton({
-    required this.onPressed,
-    required this.gradient,
-    required this.cardColor,
-    required this.label,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 46,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: gradient,
-          borderRadius: BorderRadius.circular(18),
-        ),
-        padding: const EdgeInsets.all(2),
-        child: Container(
-          decoration: BoxDecoration(
-            color: cardColor,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: TextButton(
-            onPressed: onPressed,
-            style: TextButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-            child: ShaderMask(
-              shaderCallback: (rect) => gradient.createShader(
-                Rect.fromLTWH(0, 0, rect.width, rect.height),
-              ),
-              blendMode: BlendMode.srcIn,
-              child: Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
+// Removed unused _GradientOutlineFillButton after switching reject to a filled red button

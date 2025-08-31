@@ -36,18 +36,25 @@ class _OrdersScreenState extends State<OrdersScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-  // final isDark = Theme.of(context).brightness == Brightness.dark;
+  final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor:
+            isDark ? DesignSystem.darkBackground : DesignSystem.background,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.transparent,
           elevation: 0,
           centerTitle: false, // align to the start (right in RTL)
           titleSpacing: 16,
-          title: const Text('الطلبات', textAlign: TextAlign.right),
+          title: Text(
+            'الطلبات',
+            textAlign: TextAlign.right,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
         ),
         body: SafeArea(
           child: RefreshIndicator(
@@ -59,9 +66,10 @@ class _OrdersScreenState extends State<OrdersScreen>
               // Let ListView add keep-alives & repaint boundaries for smoother scrolling
               addAutomaticKeepAlives: true,
               addRepaintBoundaries: true,
+              // Match the LiveOrderCard's content height for better virtualization
               prototypeItem: const Padding(
                 padding: EdgeInsets.only(bottom: 12),
-                child: SizedBox(height: 260),
+                child: SizedBox(height: 280),
               ),
               physics: const ClampingScrollPhysics(),
               itemBuilder: (context, index) {

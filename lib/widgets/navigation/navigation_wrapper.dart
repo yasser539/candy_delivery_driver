@@ -19,53 +19,31 @@ class NavigationWrapper extends StatefulWidget {
 }
 
 class _NavigationWrapperState extends State<NavigationWrapper> {
-  // Simplified without backend dependencies
-  double _dragDistance = 0.0;
-  static const double _swipeThreshold = 100.0;
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  void _handleSwipe(DragUpdateDetails details) {
-    setState(() {
-      _dragDistance += details.delta.dx;
-    });
-  }
-
-  void _handleSwipeEnd(DragEndDetails details) {
-    // Simplified swipe handling - no backend state management
-    setState(() {
-      _dragDistance = 0.0;
-    });
-  }
+  // Removed unused swipe fields; keeping gestures minimal
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode =
-        MediaQuery.of(context).platformBrightness == Brightness.dark;
+  // Follow the app's active theme (not the device setting) to avoid mismatched background
+  final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      backgroundColor: isDarkMode
-          ? DesignSystem.darkBackground
-          : DesignSystem.background,
-      body: GestureDetector(
-        onHorizontalDragUpdate: _handleSwipe,
-        onHorizontalDragEnd: _handleSwipeEnd,
-        child: Stack(
-          children: [
-            // Main content with animation
-            widget.child,
-            // Navigation bar at bottom
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: CandyNavigationBar(
-                onNavTap: widget.onNavTap ?? (index) {},
-              ),
+  return Scaffold(
+  // Allow content and nav to extend under system gesture area without reserving padding
+  resizeToAvoidBottomInset: false,
+    backgroundColor: isDarkMode
+      ? DesignSystem.darkBackground
+      : DesignSystem.background,
+      body: Stack(
+        children: [
+          // Let content extend under the floating nav bar
+          widget.child,
+          // Navigation bar at bottom
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: CandyNavigationBar(
+              onNavTap: widget.onNavTap ?? (index) {},
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
