@@ -1,0 +1,85 @@
+name: Apply Supabase Schema
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Optional: Override DB URL (defaults to SUPABASE_DB_URL secret)"
+        required: false
+        default: ""
+  push:
+    paths:
+      - tools/sql/**
+
+permissions:
+  contents: read
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install psql client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Apply schema
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          INPUT_DB_URL: ${{ github.event.inputs.target }}
+        run: |
+          set -e
+          DB_URL="${INPUT_DB_URL:-$SUPABASE_DB_URL}"
+          if [ -z "$DB_URL" ]; then
+            echo "Missing DB URL. Set SUPABASE_DB_URL secret or provide workflow input." >&2
+            exit 1
+          fi
+          echo "Applying schema to host: $(echo "$DB_URL" | sed -E 's#^postgres(ql)?://[^@]+@([^:/]+).*#\2#')"
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -f tools/sql/001_init_schema.sql
+
+      - name: Verify objects
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          INPUT_DB_URL: ${{ github.event.inputs.target }}
+        run: |
+          DB_URL="${INPUT_DB_URL:-$SUPABASE_DB_URL}"
+          echo "Verifying enums and tables..."
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -c "select enumlabel from pg_enum join pg_type on pg_enum.enumtypid=pg_type.oid where typname in ('user_role','order_status','delivery_status','payment_status') order by 1;"
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -c "\\dt+ public.user_profiles public.app_orders public.app_delivery_tracking public.app_delivery_events public.app_payments"
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -c "\\dv+ public.orders"
+
+      - name: Summary
+        run: |
+          echo "Schema applied and verified." >> $GITHUB_STEP_SUMMARY
+name: Apply Supabase Schema
+
+on:
+  workflow_dispatch:
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Apply schema to Supabase
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          psql "${DATABASE_URL}" -v ON_ERROR_STOP=1 -f tools/sql/001_init_schema.sql
+
+      - name: Verify objects
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          psql "${DATABASE_URL}" -c "select typname from pg_type where typname in ('user_role','order_status','delivery_status','payment_status') order by 1;"
+          psql "${DATABASE_URL}" -c "select table_name from information_schema.tables where table_schema='public' and table_name in ('user_profiles','user_addresses','app_orders','app_delivery_tracking','app_delivery_events','app_payments') order by 1;"
