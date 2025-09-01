@@ -10,6 +10,7 @@ on:
   push:
     paths:
       - tools/sql/**
+      - .github/workflows/apply-schema.yml
 
 permissions:
   contents: read
