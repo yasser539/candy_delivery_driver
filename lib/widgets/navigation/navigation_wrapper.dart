@@ -6,12 +6,14 @@ class NavigationWrapper extends StatefulWidget {
   final Widget child;
   final bool showBackButton;
   final Function(int)? onNavTap;
+  final int currentIndex;
 
   const NavigationWrapper({
     super.key,
     required this.child,
     this.showBackButton = true,
     this.onNavTap,
+    required this.currentIndex,
   });
 
   @override
@@ -23,15 +25,15 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
 
   @override
   Widget build(BuildContext context) {
-  // Follow the app's active theme (not the device setting) to avoid mismatched background
-  final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    // Follow the app's active theme (not the device setting) to avoid mismatched background
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-  return Scaffold(
-  // Allow content and nav to extend under system gesture area without reserving padding
-  resizeToAvoidBottomInset: false,
-    backgroundColor: isDarkMode
-      ? DesignSystem.darkBackground
-      : DesignSystem.background,
+    return Scaffold(
+      // Allow content and nav to extend under system gesture area without reserving padding
+      resizeToAvoidBottomInset: false,
+      backgroundColor: isDarkMode
+          ? DesignSystem.darkBackground
+          : DesignSystem.background,
       body: Stack(
         children: [
           // Let content extend under the floating nav bar
@@ -41,6 +43,7 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
             alignment: Alignment.bottomCenter,
             child: CandyNavigationBar(
               onNavTap: widget.onNavTap ?? (index) {},
+              currentIndex: widget.currentIndex,
             ),
           ),
         ],

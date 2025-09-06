@@ -5,8 +5,13 @@ import 'modern_nav_item.dart';
 
 class CandyNavigationBar extends StatefulWidget {
   final Function(int)? onNavTap;
-  
-  const CandyNavigationBar({super.key, this.onNavTap});
+  final int currentIndex;
+
+  const CandyNavigationBar({
+    super.key,
+    this.onNavTap,
+    required this.currentIndex,
+  });
 
   @override
   State<CandyNavigationBar> createState() => _CandyNavigationBarState();
@@ -39,7 +44,7 @@ class _CandyNavigationBarState extends State<CandyNavigationBar>
 
   @override
   Widget build(BuildContext context) {
-  final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AnimatedBuilder(
       animation: _slideAnimation,
@@ -95,32 +100,32 @@ class _CandyNavigationBarState extends State<CandyNavigationBar>
                             ModernNavItem(
                               icon: FontAwesomeIcons.user,
                               label: 'حسابي',
-                              isActive: false,
+                              isActive: widget.currentIndex == 0,
                               onTap: () => widget.onNavTap?.call(0),
                             ),
                             ModernNavItem(
-                              icon: FontAwesomeIcons.mapLocationDot,
-                              label: 'الخريطة',
-                              isActive: false,
+                              icon: FontAwesomeIcons.locationArrow,
+                              label: 'التتبع',
+                              isActive: widget.currentIndex == 1,
                               onTap: () => widget.onNavTap?.call(1),
                             ),
                             ModernNavItem(
                               icon: FontAwesomeIcons.house,
                               label: 'الرئيسية',
-                              isActive: true,
+                              isActive: widget.currentIndex == 2,
                               onTap: () => widget.onNavTap?.call(2),
                               isHome: true,
                             ),
                             ModernNavItem(
-                              icon: FontAwesomeIcons.truck,
+                              icon: FontAwesomeIcons.box,
                               label: 'الطلبات',
-                              isActive: false,
+                              isActive: widget.currentIndex == 3,
                               onTap: () => widget.onNavTap?.call(3),
                             ),
                             ModernNavItem(
                               icon: FontAwesomeIcons.gear,
                               label: 'الإعدادات',
-                              isActive: false,
+                              isActive: widget.currentIndex == 4,
                               onTap: () => widget.onNavTap?.call(4),
                               labelFontSize: 9,
                             ),

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../core/design_system/design_system.dart';
+import '../../core/session/current_captain.dart';
+import '../../data/repositories/delivery_captains_repository.dart';
+import '../../models/delivery_captain.dart';
 import '../../core/design_system/app_colors.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -13,19 +16,15 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   // Consistent height for stat tiles
   static const double _statTileHeight = 112;
-  // Mock profile data - no backend needed
-  final Map<String, dynamic> _captain = {
-    'name': 'عبد الرحمن الحطامي',
-    'phone': '+966501234567',
-    'email': 'abdulrahman@example.com',
-    'city': 'الرياض',
-    'region': 'المنطقة الوسطى',
-    'vehicle_type': 'دراجة نارية',
-    'license_number': 'ABC123456',
-    'join_date': '2024-01-15',
-    'total_deliveries': 156,
-    'rating': 4.8,
-  };
+  final _repo = DeliveryCaptainsRepository();
+  DeliveryCaptain? _captain;
+  bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _captain = CurrentCaptain.value;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +78,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return AppColors.success;
       case 'الموقع':
         return AppColors.waterAccent;
+      case 'الإحداثيات':
+        return AppColors.waterAccent;
       case 'نوع السيارة':
         return AppColors.accentVibrant;
       case 'رقم اللوحة':
@@ -89,7 +90,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _refreshProfile() async {
-    await Future.delayed(const Duration(milliseconds: 500));
+    setState(() => _loading = true);
+    try {
+      final current = CurrentCaptain.value;
+      if (current != null) {
+        final fresh = await _repo.getById(current.id);
+        if (fresh != null) {
+          _captain = fresh;
+          CurrentCaptain.value = fresh;
+        }
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   String _formatDate(dynamic value) {
@@ -131,8 +144,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _formatLocation(dynamic value) {
     try {
       if (value == null) {
-        final city = _captain['city']?.toString();
-        final region = _captain['region']?.toString();
+  final city = _captain?.city?.toString();
+  final region = _captain?.region?.toString();
         if (city != null &&
             city.isNotEmpty &&
             region != null &&
@@ -157,10 +170,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return '-';
   }
 
+  String _formatLatLng(double? lat, double? lng) {
+    if (lat == null || lng == null) return '-';
+    return '${lat.toStringAsFixed(5)}, ${lng.toStringAsFixed(5)}';
+  }
+
   Widget _buildProfileHeader(bool isDark) {
-    final String name = _captain['name'] ?? 'الموصل';
+  final String name = _captain?.fullName ?? 'الموصل';
     final String subtitle = 'موصل مياه';
-    final String? imageUrl = null;
+  final String? imageUrl = _captain?.profileImageUrl;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       child: Row(
@@ -200,8 +218,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      _captain['rating'] != null
-                          ? '${(_captain['rating']).toString()} (تقييم)'
+                      _captain?.driverRating != null
+                          ? '${_captain!.driverRating!.toStringAsFixed(1)} (تقييم)'
                           : 'بدون تقييم',
                       style: DesignSystem.labelSmall.copyWith(
                         color: isDark
@@ -400,31 +418,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildDeliveryStatsSection(bool isDark) {
-    final int delivered = (() {
-      final d1 = _captain['total_deliveries'];
-      final d2 = _captain['completed'];
-      if (d1 is num) return d1.toInt();
-      if (d2 is num) return d2.toInt();
-      return 0;
-    })();
-    final String ratingText = (() {
-      final r = _captain['rating'];
-      if (r == null) return '0/5';
-      if (r is num) return '${r.toStringAsFixed(1)}/5';
-      final parsed = double.tryParse(r.toString());
-      return parsed != null ? '${parsed.toStringAsFixed(1)}/5' : '0/5';
-    })();
+    // No deliveries count in schema yet; keep 0 for now.
+    final int delivered = 0;
+    final String ratingText = _captain?.driverRating != null
+        ? '${_captain!.driverRating!.toStringAsFixed(1)}/5'
+        : '0/5';
     final String daysWorked = (() {
-      final raw = _captain['join_date'] ?? _captain['created_at'];
-      try {
-        final d = DateTime.parse(raw.toString());
-        final now = DateTime.now();
-        final diff = now.difference(d).inDays;
-        final days = diff < 0 ? 0 : diff;
-        return '$days يوم';
-      } catch (_) {
-        return '-';
-      }
+      final DateTime? start = _captain?.startDate ?? _captain?.createdAt;
+      if (start == null) return '-';
+      final now = DateTime.now();
+      final diff = now.difference(start).inDays;
+      final days = diff < 0 ? 0 : diff;
+      return '$days يوم';
     })();
 
     return Column(
@@ -440,6 +445,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         ),
+        if (_loading) ...[
+          const SizedBox(height: 4),
+          LinearProgressIndicator(
+            minHeight: 3,
+            color: DesignSystem.primary,
+            backgroundColor:
+                isDark ? Colors.white10 : Colors.black12,
+          ),
+          const SizedBox(height: 8),
+        ],
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: Row(
@@ -449,7 +464,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: _buildStatItemFilledGradient(
                   'تم التوصيل',
                   '$delivered طلب',
-                  FontAwesomeIcons.checkCircle,
+                  FontAwesomeIcons.circleCheck,
                   isDark,
                 ),
               ),
@@ -581,50 +596,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildDriverInfoSection(bool isDark) {
-    final items = <({String title, String value, IconData icon})>[
+  final items = <({String title, String value, IconData icon})>[
       (
         title: 'رقم الموصل',
-        value: _captain['phone']?.toString() ?? '-',
+    value: _captain?.phone ?? '-',
         icon: FontAwesomeIcons.idCard,
       ),
       (
         title: 'رقم الهوية',
-        value: _captain['id_number']?.toString() ?? '-',
+    value: _captain?.nationalId ?? '-',
         icon: FontAwesomeIcons.addressCard,
       ),
       (
         title: 'تاريخ الميلاد',
-        value: _formatDate(_captain['birth_date'] ?? _captain['date_of_birth']),
+    value: _formatDate(_captain?.birthDate),
         icon: FontAwesomeIcons.cakeCandles,
       ),
       (
         title: 'رقم الرخصة',
-        value: _captain['license_number']?.toString() ?? '-',
+    value: _captain?.licenseNumber ?? '-',
         icon: FontAwesomeIcons.car,
       ),
       (
         title: 'رقم اللوحة',
-        value: _captain['vehicle_plate']?.toString() ?? '-',
+    value: _captain?.vehiclePlate ?? '-',
         icon: FontAwesomeIcons.hashtag,
       ),
       (
         title: 'الحالة',
-        value: _captain['status']?.toString() ?? '-',
+    value: _captain?.status ?? '-',
         icon: FontAwesomeIcons.circleCheck,
       ),
       (
         title: 'الموقع',
-        value: _formatLocation(_captain['location']),
+    value: _captain?.driverAddress ?? _formatLocation(_captain?.location),
         icon: FontAwesomeIcons.locationDot,
       ),
       (
+        title: 'الإحداثيات',
+        value: _formatLatLng(
+          _captain?.driverLatitude,
+          _captain?.driverLongitude,
+        ),
+        icon: FontAwesomeIcons.locationCrosshairs,
+      ),
+      (
         title: 'نوع السيارة',
-        value: _captain['vehicle_type']?.toString() ?? '-',
+    value: _captain?.vehicleType ?? '-',
         icon: FontAwesomeIcons.truck,
       ),
       (
         title: 'تاريخ الانضمام',
-        value: _formatDate(_captain['join_date'] ?? _captain['created_at']),
+    value: _formatDate(_captain?.startDate ?? _captain?.createdAt),
         icon: FontAwesomeIcons.calendarPlus,
       ),
     ];

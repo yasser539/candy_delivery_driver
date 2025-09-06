@@ -22,13 +22,13 @@ class AppPayment {
   });
 
   factory AppPayment.fromMap(Map<String, dynamic> m) => AppPayment(
-        id: m['id'] as String,
-        orderId: m['order_id'] as String,
-        provider: m['provider'] as String,
-        providerRef: m['provider_ref'] as String?,
-        amountCents: (m['amount_cents'] as num).toInt(),
-        currency: (m['currency'] as String?) ?? 'USD',
-        status: PaymentStatus.values.firstWhere((e) => e.name == m['status']),
-        createdAt: DateTime.parse(m['created_at'] as String),
-      );
+    id: m['id'] as String,
+    orderId: m['order_id'] as String,
+    provider: m['provider'] as String,
+    providerRef: m['provider_ref'] as String?,
+    amountCents: (m['amount_cents'] as num).toInt(),
+    currency: (m['currency'] as String?) ?? 'USD',
+    status: PaymentStatus.values.firstWhere((e) => e.name == m['status']),
+    createdAt: DateTime.parse(m['created_at'] as String),
+  );
 }

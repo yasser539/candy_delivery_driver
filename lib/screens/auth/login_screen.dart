@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/design_system/design_system.dart';
+import '../../data/repositories/delivery_captains_repository.dart';
+import '../../core/session/current_captain.dart';
 import '../main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -16,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen>
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  final _repo = DeliveryCaptainsRepository();
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -56,29 +59,46 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Future<void> _login() async {
-    // Accept any input (including empty) and proceed to main screen.
-    if (!_formKey.currentState!.validate()) {
-      // allow bypass even if form validation fails
-    }
+    if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
-
-    await Future.delayed(const Duration(milliseconds: 300));
-
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const MainScreen()),
-    );
+    try {
+      final phone = _phoneController.text.trim();
+      final pass = _passwordController.text;
+      final user = await _repo.authenticate(phone: phone, password: pass);
+      if (user == null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('بيانات الدخول غير صحيحة')),
+        );
+      } else {
+  CurrentCaptain.value = user;
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainScreen()),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('خطأ في الاتصال: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   String? _validatePhone(String? value) {
-    // allow empty phone
+    final v = value?.trim() ?? '';
+    if (v.isEmpty) return 'أدخل رقم الجوال';
+    if (v.length < 6) return 'رقم الجوال غير صحيح';
     return null;
   }
 
   String? _validatePassword(String? value) {
-    // allow empty password
+    final v = value ?? '';
+    if (v.isEmpty) return 'أدخل كلمة المرور';
+    if (v.length < 4) return 'كلمة المرور قصيرة';
     return null;
   }
 

@@ -16,20 +16,20 @@ class UserProfile {
   });
 
   factory UserProfile.fromMap(Map<String, dynamic> m) => UserProfile(
-        userId: m['user_id'] as String,
-        fullName: m['full_name'] as String?,
-        phone: m['phone'] as String?,
-        role: m['role'] as String,
-        createdAt: DateTime.parse(m['created_at'] as String),
-        updatedAt: DateTime.parse(m['updated_at'] as String),
-      );
+    userId: m['user_id'] as String,
+    fullName: m['full_name'] as String?,
+    phone: m['phone'] as String?,
+    role: m['role'] as String,
+    createdAt: DateTime.parse(m['created_at'] as String),
+    updatedAt: DateTime.parse(m['updated_at'] as String),
+  );
 
   Map<String, dynamic> toMap() => {
-        'user_id': userId,
-        'full_name': fullName,
-        'phone': phone,
-        'role': role,
-        'created_at': createdAt.toIso8601String(),
-        'updated_at': updatedAt.toIso8601String(),
-      };
+    'user_id': userId,
+    'full_name': fullName,
+    'phone': phone,
+    'role': role,
+    'created_at': createdAt.toIso8601String(),
+    'updated_at': updatedAt.toIso8601String(),
+  };
 }

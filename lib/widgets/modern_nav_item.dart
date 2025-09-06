@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../core/design_system/design_system.dart';
 
-class ModernNavItem extends StatelessWidget {
+class ModernNavItem extends StatefulWidget {
   final IconData icon;
   final String label;
   final bool isActive;
@@ -18,20 +19,66 @@ class ModernNavItem extends StatelessWidget {
     required this.onTap,
     this.badge,
     this.isHome = false,
-  this.labelFontSize = 10,
+    this.labelFontSize = 10,
   });
+
+  @override
+  State<ModernNavItem> createState() => _ModernNavItemState();
+}
+
+class _ModernNavItemState extends State<ModernNavItem> {
+  bool _pressed = false;
+
+  void _handleTapDown(TapDownDetails _) {
+    setState(() => _pressed = true);
+  }
+
+  void _handleTapCancel() {
+    setState(() => _pressed = false);
+  }
+
+  void _handleTapUp(TapUpDetails _) {
+    setState(() => _pressed = false);
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color inactiveColor = isDark
-        ? DesignSystem.textInverse
-        : Colors.grey.shade600;
+    final Color inactiveColor = isDark ? Colors.white70 : Colors.grey.shade600;
+
+    final bool showGradient = !widget.isHome && (widget.isActive || _pressed);
+
+    Widget nonHomeIcon() {
+      final baseIcon = FaIcon(widget.icon, size: 20, color: Colors.white);
+      if (showGradient) {
+        return AnimatedScale(
+          scale: widget.isActive || _pressed ? 1.05 : 1.0,
+          duration: const Duration(milliseconds: 140),
+          curve: Curves.easeOutCubic,
+          child: SizedBox(
+    width: 20,
+    height: 20,
+            child: ShaderMask(
+              shaderCallback: (Rect bounds) =>
+                  DesignSystem.primaryGradient.createShader(bounds),
+              blendMode: BlendMode.srcIn,
+        child: baseIcon,
+            ),
+          ),
+        );
+      }
+      return FaIcon(widget.icon, color: inactiveColor, size: 20);
+    }
+
     return RepaintBoundary(
       child: GestureDetector(
-        onTap: onTap,
+        onTap: widget.onTap,
+        onTapDown: _handleTapDown,
+        onTapCancel: _handleTapCancel,
+        onTapUp: _handleTapUp,
+        behavior: HitTestBehavior.opaque,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 180),
           curve: Curves.easeOutCubic,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           child: Column(
@@ -40,7 +87,7 @@ class ModernNavItem extends StatelessWidget {
               Stack(
                 alignment: Alignment.center,
                 children: [
-                  if (isHome)
+                  if (widget.isHome)
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       curve: Curves.easeOutCubic,
@@ -51,7 +98,7 @@ class ModernNavItem extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                  isHome
+                  widget.isHome
                       ? Container(
                           width: 56,
                           height: 48,
@@ -61,35 +108,15 @@ class ModernNavItem extends StatelessWidget {
                           ),
                           child: Center(
                             child: AnimatedScale(
-                              scale: isActive ? 1.05 : 1.0,
+                              scale: widget.isActive ? 1.05 : 1.0,
                               duration: const Duration(milliseconds: 200),
                               curve: Curves.easeOutCubic,
-                              child: Icon(icon, color: Colors.white, size: 20),
+                              child: FaIcon(widget.icon, color: Colors.white, size: 20),
                             ),
                           ),
                         )
-                      : isActive
-                          ? AnimatedScale(
-                              scale: isActive ? 1.05 : 1.0,
-                              duration: const Duration(milliseconds: 200),
-                              curve: Curves.easeOutCubic,
-                              child: isDark
-                                  ? Icon(icon, color: Colors.white, size: 20)
-                                  : ShaderMask(
-                                      shaderCallback: (Rect bounds) {
-                                        return DesignSystem.primaryGradient
-                                            .createShader(bounds);
-                                      },
-                                      blendMode: BlendMode.srcIn,
-                                      child: Icon(icon, size: 20),
-                                    ),
-                            )
-                          : Icon(
-                              icon,
-                              color: inactiveColor,
-                              size: 20,
-                            ),
-                  if (badge != null && badge! > 0)
+                      : nonHomeIcon(),
+                  if (widget.badge != null && widget.badge! > 0)
                     Positioned(
                       top: -2,
                       right: -2,
@@ -107,7 +134,7 @@ class ModernNavItem extends StatelessWidget {
                           minHeight: 20,
                         ),
                         child: Text(
-                          badge.toString(),
+                          widget.badge.toString(),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 12,
@@ -120,32 +147,33 @@ class ModernNavItem extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 4),
-        // Selected label uses gradient in light mode; in dark mode use solid white
-        if (isActive && !isDark)
+              // Keep label logic; we can extend to gradient on dark later if needed
+              if (widget.isActive && !isDark)
                 ShaderMask(
-                  shaderCallback: (Rect bounds) {
-                    return DesignSystem.primaryGradient.createShader(bounds);
-                  },
+                  shaderCallback: (Rect bounds) =>
+                      DesignSystem.primaryGradient.createShader(bounds),
                   blendMode: BlendMode.srcIn,
                   child: Text(
-                    label,
+                    widget.label,
                     style: TextStyle(
-                      // White text becomes the mask for the gradient
                       color: Colors.white,
-                      fontSize: labelFontSize,
+                      fontSize: widget.labelFontSize,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                 )
               else
                 Text(
-                  label,
+                  widget.label,
                   style: TextStyle(
-          color: isDark
-            ? Colors.white
-            : (isActive ? DesignSystem.primary : inactiveColor),
-                    fontSize: labelFontSize,
-                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                    color: isDark
+                        ? Colors.white
+                        : (widget.isActive
+                            ? DesignSystem.primary
+                            : inactiveColor),
+                    fontSize: widget.labelFontSize,
+                    fontWeight:
+                        widget.isActive ? FontWeight.w700 : FontWeight.w500,
                   ),
                 ),
             ],

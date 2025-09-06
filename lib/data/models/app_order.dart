@@ -30,17 +30,19 @@ class AppOrder {
   });
 
   factory AppOrder.fromMap(Map<String, dynamic> m) => AppOrder(
-        id: m['id'] as String,
-        userId: m['user_id'] as String?,
-        addressId: m['address_id'] as String?,
-        cartId: m['cart_id'] as String?,
-        status: OrderStatus.values.firstWhere((e) => e.name == m['status']),
-        paymentStatus: PaymentStatus.values.firstWhere((e) => e.name == m['payment_status']),
-        subtotalCents: (m['subtotal_cents'] as num?)?.toInt() ?? 0,
-        deliveryFeeCents: (m['delivery_fee_cents'] as num?)?.toInt() ?? 0,
-        totalCents: (m['total_cents'] as num?)?.toInt() ?? 0,
-        notes: m['notes'] as String?,
-        createdAt: DateTime.parse(m['created_at'] as String),
-        updatedAt: DateTime.parse(m['updated_at'] as String),
-      );
+    id: m['id'] as String,
+    userId: m['user_id'] as String?,
+    addressId: m['address_id'] as String?,
+    cartId: m['cart_id'] as String?,
+    status: OrderStatus.values.firstWhere((e) => e.name == m['status']),
+    paymentStatus: PaymentStatus.values.firstWhere(
+      (e) => e.name == m['payment_status'],
+    ),
+    subtotalCents: (m['subtotal_cents'] as num?)?.toInt() ?? 0,
+    deliveryFeeCents: (m['delivery_fee_cents'] as num?)?.toInt() ?? 0,
+    totalCents: (m['total_cents'] as num?)?.toInt() ?? 0,
+    notes: m['notes'] as String?,
+    createdAt: DateTime.parse(m['created_at'] as String),
+    updatedAt: DateTime.parse(m['updated_at'] as String),
+  );
 }

@@ -146,7 +146,9 @@ class _AvailableCartsScreenState extends State<AvailableCartsScreen> {
                             curve: Curves.easeInOut,
                             margin: const EdgeInsets.only(bottom: 10),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).brightness == Brightness.dark
+                              color:
+                                  Theme.of(context).brightness ==
+                                      Brightness.dark
                                   ? DesignSystem.darkSurface
                                   : Colors.white,
                               borderRadius: BorderRadius.circular(
@@ -188,7 +190,7 @@ class _AvailableCartsScreenState extends State<AvailableCartsScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 32),
       alignment: Alignment.center,
-  child: Column(
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(

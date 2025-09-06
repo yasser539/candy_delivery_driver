@@ -23,11 +23,11 @@ class EarningsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-  final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-    color: isDarkTheme ? DesignSystem.darkSurface : DesignSystem.surface,
+        color: isDarkTheme ? DesignSystem.darkSurface : DesignSystem.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -36,9 +36,7 @@ class EarningsCard extends StatelessWidget {
             offset: const Offset(0, 2),
           ),
         ],
-        border: Border.all(
-          color: color.withOpacity(0.2),
-        ),
+        border: Border.all(color: color.withOpacity(0.2)),
       ),
       child: Row(
         children: [
@@ -48,11 +46,7 @@ class EarningsCard extends StatelessWidget {
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: FaIcon(
-              icon,
-              color: color,
-              size: 24,
-            ),
+            child: FaIcon(icon, color: color, size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -62,7 +56,9 @@ class EarningsCard extends StatelessWidget {
                 Text(
                   title,
                   style: DesignSystem.bodyMedium.copyWith(
-                    color: isDarkTheme ? Colors.white : DesignSystem.textSecondary,
+                    color: isDarkTheme
+                        ? Colors.white
+                        : DesignSystem.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -72,7 +68,9 @@ class EarningsCard extends StatelessWidget {
                           Text(
                             amount,
                             style: DesignSystem.titleLarge.copyWith(
-                              color: isDarkTheme ? Colors.white : DesignSystem.textPrimary,
+                              color: isDarkTheme
+                                  ? Colors.white
+                                  : DesignSystem.textPrimary,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -80,14 +78,18 @@ class EarningsCard extends StatelessWidget {
                           CurrencyIcon(
                             width: 20,
                             height: 20,
-                            color: isDarkTheme ? Colors.white : DesignSystem.textPrimary,
+                            color: isDarkTheme
+                                ? Colors.white
+                                : DesignSystem.textPrimary,
                           ),
                         ],
                       )
                     : Text(
                         amount,
                         style: DesignSystem.titleLarge.copyWith(
-                          color: isDarkTheme ? Colors.white : DesignSystem.textPrimary,
+                          color: isDarkTheme
+                              ? Colors.white
+                              : DesignSystem.textPrimary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

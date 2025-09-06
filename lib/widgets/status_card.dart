@@ -20,13 +20,13 @@ class StatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-  final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-      color: isDark ? DesignSystem.darkSurface : Colors.white,
+          color: isDark ? DesignSystem.darkSurface : Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -47,17 +47,13 @@ class StatusCard extends StatelessWidget {
                     color: color.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: FaIcon(
-                    icon,
-                    color: color,
-                    size: 20,
-                  ),
+                  child: FaIcon(icon, color: color, size: 20),
                 ),
                 const Spacer(),
-        Text(
+                Text(
                   count.toString(),
                   style: DesignSystem.headlineSmall.copyWith(
-          color: isDark ? Colors.white : DesignSystem.textPrimary,
+                    color: isDark ? Colors.white : DesignSystem.textPrimary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -67,7 +63,7 @@ class StatusCard extends StatelessWidget {
             Text(
               title,
               style: DesignSystem.titleMedium.copyWith(
-        color: isDark ? Colors.white : DesignSystem.textPrimary,
+                color: isDark ? Colors.white : DesignSystem.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -75,7 +71,7 @@ class StatusCard extends StatelessWidget {
             Text(
               _getSubtitle(),
               style: DesignSystem.bodySmall.copyWith(
-        color: isDark ? Colors.white : DesignSystem.textSecondary,
+                color: isDark ? Colors.white : DesignSystem.textSecondary,
               ),
             ),
           ],

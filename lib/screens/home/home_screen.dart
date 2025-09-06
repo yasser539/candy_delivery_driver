@@ -31,9 +31,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-  // Load orders from Supabase
-  _loadOrders();
-  _monthlyDays = 15; // TODO: compute real working days if needed
+    // Load orders from Supabase
+    _loadOrders();
+    _monthlyDays = 15; // TODO: compute real working days if needed
 
     _captureStatusIfOnline();
   }
@@ -103,13 +103,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.error_outline, color: Colors.red, size: 18),
+                          const Icon(
+                            Icons.error_outline,
+                            color: Colors.red,
+                            size: 18,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               _error!,
                               style: TextStyle(
-                                color: isDark ? Colors.white : Colors.red.shade800,
+                                color: isDark
+                                    ? Colors.white
+                                    : Colors.red.shade800,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -150,7 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Expanded(
                           child: Text(
-                            'طلباتي',
+                            'الطلبات',
                             style: DesignSystem.titleMedium.copyWith(
                               fontWeight: FontWeight.bold,
                               color: isDark
@@ -219,7 +225,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           )
                           .toList(),
                     ),
-                  SizedBox(height: MediaQuery.of(context).viewPadding.bottom + 100),
+                  SizedBox(
+                    height: MediaQuery.of(context).viewPadding.bottom + 100,
+                  ),
                 ],
               ),
             ),
@@ -531,7 +539,7 @@ class OrderCard extends StatelessWidget {
         return 'تم التسليم';
       case OrderStatus.canceled:
         return 'ملغي';
-  }
+    }
   }
 
   Color _statusColor(BuildContext context) {
@@ -557,8 +565,7 @@ class OrderCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : DesignSystem.textPrimary;
 
-    return Container
-      (
+    return Container(
       decoration: BoxDecoration(
         color: isDark ? DesignSystem.darkSurface : DesignSystem.surface,
         borderRadius: BorderRadius.circular(18),
@@ -590,10 +597,8 @@ class OrderCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               ShaderMask(
-                shaderCallback: (rect) =>
-                    DesignSystem.primaryGradient.createShader(
-                      Rect.fromLTWH(0, 0, rect.width, rect.height),
-                    ),
+                shaderCallback: (rect) => DesignSystem.primaryGradient
+                    .createShader(Rect.fromLTWH(0, 0, rect.width, rect.height)),
                 blendMode: BlendMode.srcIn,
                 child: const FaIcon(
                   FontAwesomeIcons.box,
@@ -607,7 +612,10 @@ class OrderCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: _statusColor(context),
                   borderRadius: BorderRadius.circular(12),
@@ -641,7 +649,11 @@ class OrderCard extends StatelessWidget {
           const SizedBox(height: 10),
           Row(
             children: [
-              Icon(Icons.access_time, size: 14, color: isDark ? Colors.white70 : DesignSystem.textSecondary),
+              Icon(
+                Icons.access_time,
+                size: 14,
+                color: isDark ? Colors.white70 : DesignSystem.textSecondary,
+              ),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(

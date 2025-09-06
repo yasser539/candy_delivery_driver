@@ -26,9 +26,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-  // final scheme = theme.colorScheme; // not needed after simplification
+    // final scheme = theme.colorScheme; // not needed after simplification
     final isDark = theme.brightness == Brightness.dark;
-  final dividerColor = isDark ? Colors.white12 : Colors.black12;
+    final dividerColor = isDark ? Colors.white12 : Colors.black12;
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -79,29 +79,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                 Divider(height: 14, thickness: 1, color: dividerColor),
 
-                // Notifications
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 2,
-                  ),
-                  leading: _coloredIcon(
-                    FontAwesomeIcons.bell,
-                    gradient: DesignSystem.warningGradient,
-                  ),
-                  title: Text(
-                    'الإشعارات',
-                    style: DesignSystem.bodySmall.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: isDark
-                          ? DesignSystem.textInverse
-                          : DesignSystem.textPrimary,
-                    ),
-                  ),
-                  onTap: () => _showComingSoon('الإشعارات'),
-                ),
-
-                Divider(height: 14, thickness: 1, color: dividerColor),
+                // (Notifications removed)
 
                 // Language: only title row
                 ListTile(
@@ -160,29 +138,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                 // (Rate app removed)
 
-                // Share app
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 2,
-                  ),
-                  leading: _coloredIcon(
-                    FontAwesomeIcons.shareNodes,
-                    gradient: DesignSystem.accentGradient,
-                  ),
-                  title: Text(
-                    'مشاركة التطبيق',
-                    style: DesignSystem.bodySmall.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: isDark
-                          ? DesignSystem.textInverse
-                          : DesignSystem.textPrimary,
-                    ),
-                  ),
-                  onTap: () => _showComingSoon('مشاركة التطبيق'),
-                ),
-
-                Divider(height: 14, thickness: 1, color: dividerColor),
+                // (Share app removed)
 
                 // Removed Terms & Policies
 
@@ -233,7 +189,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     horizontal: 12,
                     vertical: 2,
                   ),
-                  leading: const FaIcon(FontAwesomeIcons.rightFromBracket, color: Colors.red),
+                  leading: const FaIcon(
+                    FontAwesomeIcons.rightFromBracket,
+                    color: Colors.red,
+                  ),
                   title: Text(
                     'تسجيل الخروج',
                     style: DesignSystem.bodySmall.copyWith(
@@ -304,11 +263,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   // Render a FontAwesome icon with a gradient fill
-  Widget _coloredIcon(
-    IconData icon, {
-    Gradient? gradient,
-    double size = 20,
-  }) {
+  Widget _coloredIcon(IconData icon, {Gradient? gradient, double size = 20}) {
     final g = gradient ?? DesignSystem.primaryGradient;
     return ShaderMask(
       shaderCallback: (Rect bounds) {
@@ -394,7 +349,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (dialogContext) {
         final isDark = Theme.of(dialogContext).brightness == Brightness.dark;
         return AlertDialog(
-          backgroundColor: isDark ? DesignSystem.darkBackground : DesignSystem.surface,
+          backgroundColor: isDark
+              ? DesignSystem.darkBackground
+              : DesignSystem.surface,
           title: Text(
             'اختر اللغة',
             style: TextStyle(
@@ -405,41 +362,45 @@ class _SettingsScreenState extends State<SettingsScreen> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-            ListTile(
-              title: Text(
-                'العربية',
-                style: TextStyle(color: isDark ? Colors.white : DesignSystem.textPrimary),
-              ),
-              onTap: () {
-                if (!mounted) return;
-                Navigator.pop(dialogContext);
-                if (!mounted) return;
-                ScaffoldMessenger.of(this.context).showSnackBar(
-                  SnackBar(
-                    content: Text('تم تغيير اللغة إلى العربية'),
-                    backgroundColor: DesignSystem.primary,
+              ListTile(
+                title: Text(
+                  'العربية',
+                  style: TextStyle(
+                    color: isDark ? Colors.white : DesignSystem.textPrimary,
                   ),
-                );
-              },
-            ),
-            ListTile(
-              title: Text(
-                'English',
-                style: TextStyle(color: isDark ? Colors.white : DesignSystem.textPrimary),
+                ),
+                onTap: () {
+                  if (!mounted) return;
+                  Navigator.pop(dialogContext);
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(this.context).showSnackBar(
+                    SnackBar(
+                      content: Text('تم تغيير اللغة إلى العربية'),
+                      backgroundColor: DesignSystem.primary,
+                    ),
+                  );
+                },
               ),
-              onTap: () {
-                if (!mounted) return;
-                Navigator.pop(dialogContext);
-                if (!mounted) return;
-                ScaffoldMessenger.of(this.context).showSnackBar(
-                  SnackBar(
-                    content: Text('تم تغيير اللغة إلى الإنجليزية'),
-                    backgroundColor: DesignSystem.primary,
+              ListTile(
+                title: Text(
+                  'English',
+                  style: TextStyle(
+                    color: isDark ? Colors.white : DesignSystem.textPrimary,
                   ),
-                );
-              },
-            ),
-          ],
+                ),
+                onTap: () {
+                  if (!mounted) return;
+                  Navigator.pop(dialogContext);
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(this.context).showSnackBar(
+                    SnackBar(
+                      content: Text('تم تغيير اللغة إلى الإنجليزية'),
+                      backgroundColor: DesignSystem.primary,
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
         );
       },
@@ -452,7 +413,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (dialogContext) {
         final isDark = Theme.of(dialogContext).brightness == Brightness.dark;
         return AlertDialog(
-          backgroundColor: isDark ? DesignSystem.darkBackground : DesignSystem.surface,
+          backgroundColor: isDark
+              ? DesignSystem.darkBackground
+              : DesignSystem.surface,
           title: Text(
             'تسجيل الخروج',
             style: TextStyle(
@@ -462,26 +425,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           content: Text(
             'هل أنت متأكد من تسجيل الخروج؟',
-            style: TextStyle(color: isDark ? Colors.white : DesignSystem.textPrimary),
+            style: TextStyle(
+              color: isDark ? Colors.white : DesignSystem.textPrimary,
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
               child: Text(
                 'إلغاء',
-                style: TextStyle(color: isDark ? Colors.white70 : DesignSystem.textSecondary),
+                style: TextStyle(
+                  color: isDark ? Colors.white70 : DesignSystem.textSecondary,
+                ),
               ),
             ),
             ElevatedButton(
               onPressed: () async {
-              Navigator.pop(dialogContext);
-              // Mock logout - no backend needed
-              ScaffoldMessenger.of(this.context).showSnackBar(
-                SnackBar(
-                  content: Text('تم تسجيل الخروج بنجاح'),
-                  backgroundColor: DesignSystem.success,
-                ),
-              );
+                Navigator.pop(dialogContext);
+                // Mock logout - no backend needed
+                ScaffoldMessenger.of(this.context).showSnackBar(
+                  SnackBar(
+                    content: Text('تم تسجيل الخروج بنجاح'),
+                    backgroundColor: DesignSystem.success,
+                  ),
+                );
               },
               child: const Text('تأكيد'),
             ),

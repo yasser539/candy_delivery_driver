@@ -9,13 +9,18 @@ import '../models/app_payment.dart';
 class DriverRepository {
   final SupabaseClient _db;
 
-  DriverRepository({SupabaseClient? client}) : _db = client ?? Supabase.instance.client;
+  DriverRepository({SupabaseClient? client})
+    : _db = client ?? Supabase.instance.client;
 
   // Profiles
   Future<UserProfile?> getMyProfile() async {
     final uid = _db.auth.currentUser?.id;
     if (uid == null) return null;
-    final res = await _db.from('user_profiles').select().eq('user_id', uid).maybeSingle();
+    final res = await _db
+        .from('user_profiles')
+        .select()
+        .eq('user_id', uid)
+        .maybeSingle();
     if (res == null) return null;
     return UserProfile.fromMap(res as Map<String, dynamic>);
   }
@@ -48,7 +53,11 @@ class DriverRepository {
 
   // Fetch order details for a delivery
   Future<AppOrder?> getOrder(String orderId) async {
-    final res = await _db.from('app_orders').select().eq('id', orderId).maybeSingle();
+    final res = await _db
+        .from('app_orders')
+        .select()
+        .eq('id', orderId)
+        .maybeSingle();
     if (res == null) return null;
     return AppOrder.fromMap(res as Map<String, dynamic>);
   }
@@ -62,10 +71,15 @@ class DriverRepository {
     String? notes,
   }) async {
     final payload = <String, dynamic>{'status': status};
-    if (pickedUpAt != null) payload['picked_up_at'] = pickedUpAt.toIso8601String();
-    if (deliveredAt != null) payload['delivered_at'] = deliveredAt.toIso8601String();
+    if (pickedUpAt != null)
+      payload['picked_up_at'] = pickedUpAt.toIso8601String();
+    if (deliveredAt != null)
+      payload['delivered_at'] = deliveredAt.toIso8601String();
     if (notes != null) payload['notes'] = notes;
-    await _db.from('app_delivery_tracking').update(payload).eq('id', deliveryId);
+    await _db
+        .from('app_delivery_tracking')
+        .update(payload)
+        .eq('id', deliveryId);
   }
 
   // Delivery events for a specific delivery

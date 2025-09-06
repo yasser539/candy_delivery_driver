@@ -30,7 +30,11 @@ class LiveOrderCard extends StatelessWidget {
     final color = (order['statusColor'] as Color?) ?? scheme.primary;
     // Cache primary gradient once to reuse
     final primaryGradient = DesignSystem.getBrandGradient('primary');
-    final id = order['id']?.toString() ?? '';
+  final id = order['id']?.toString() ?? '';
+  final shortId = order['shortId'];
+  final displayId = (shortId != null && shortId.toString().isNotEmpty)
+    ? shortId.toString()
+    : id;
     final rawItems = order['items'];
     final List<String> items = [];
     if (rawItems is List) {
@@ -121,7 +125,7 @@ class LiveOrderCard extends StatelessWidget {
     return Center(
       child: Container(
         width: double.infinity,
-  constraints: const BoxConstraints(minHeight: 240),
+        constraints: const BoxConstraints(minHeight: 240),
         decoration: BoxDecoration(
           color: cardColor,
           borderRadius: BorderRadius.circular(24),
@@ -176,7 +180,7 @@ class LiveOrderCard extends StatelessWidget {
                       boxShadow: DesignSystem.getBrandShadow('light'),
                     ),
                     child: Text(
-                      'طلب رقم: $id',
+                      'طلب رقم: $displayId',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
@@ -235,6 +239,37 @@ class LiveOrderCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 22),
+              ],
+
+              // optional customer address (enriched from customers table)
+              if ((order['customerAddress']?.toString().isNotEmpty ?? false)) ...[
+                Row(
+                  children: [
+                    ShaderMask(
+                      shaderCallback: (rect) => primaryGradient.createShader(
+                        Rect.fromLTWH(0, 0, rect.width, rect.height),
+                      ),
+                      blendMode: BlendMode.srcIn,
+                      child: const FaIcon(
+                        FontAwesomeIcons.locationDot,
+                        size: 14,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        order['customerAddress'].toString(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: scheme.onSurface.withOpacity(0.75),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
               ],
 
               // Fixed gap before timeline to avoid overflow in tight layouts

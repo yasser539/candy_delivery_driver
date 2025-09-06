@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/navigation/navigation_wrapper.dart';
+import '../widgets/navigation/navigation_wrapper.dart' as new_nav;
 import 'home/home_screen.dart';
 import 'orders/orders_screen.dart';
 import 'profile/profile_screen.dart';
@@ -47,12 +47,14 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return NavigationWrapper(
+    // Prefer the newer navigation wrapper if available
+    final nav = new_nav.NavigationWrapper(
       onNavTap: _onNavTap,
+      currentIndex: _currentIndex,
       child: PageView(
         controller: _pageController,
         onPageChanged: _onPageChanged,
-        physics: const BouncingScrollPhysics(),
+        physics: const NeverScrollableScrollPhysics(),
         children: [
           ProfileScreen(),
           MapScreen(),
@@ -62,5 +64,6 @@ class _MainScreenState extends State<MainScreen> {
         ],
       ),
     );
+    return nav;
   }
 }
